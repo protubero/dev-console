@@ -1,19 +1,18 @@
-package com.example.messagingstompwebsocket.wsmodel;
+package de.protubero.devconsole.model;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ClientSession {
+public class SessionInfo {
 
 
+    @JsonProperty(required = true)
     private String sessionId;
+
     private String name;
 
-    @JsonIgnore
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> properties;
 
     public String getSessionId() {
         return sessionId;
@@ -32,15 +31,19 @@ public class ClientSession {
     }
 
     public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(properties);
+        return properties;
     }
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
-    public void setProperty(String key, String value) {
-        properties.put(key, value);
+    @Override
+    public String toString() {
+        return "SessionInfo{" +
+                "sessionId='" + sessionId + '\'' +
+                ", name='" + name + '\'' +
+                ", properties=" + properties +
+                '}';
     }
-
 }

@@ -1,4 +1,4 @@
-package com.example.messagingstompwebsocket.wsmodel;
+package de.protubero.devconsole.wsmodel;
 
 public class ClientMessage {
 

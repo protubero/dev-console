@@ -1,4 +1,4 @@
-package com.example.messagingstompwebsocket.common;
+package de.protubero.devconsole.model;
 
 public class ItemProperty {
 

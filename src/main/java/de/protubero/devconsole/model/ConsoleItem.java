@@ -1,29 +1,29 @@
-package com.example.messagingstompwebsocket.controller;
+package de.protubero.devconsole.model;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
-import com.example.messagingstompwebsocket.common.ItemProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class ConsoleItem {
 
     private long id;
 
-    @JsonProperty(required = true)
+    @NotNull
     @Size(min = 2, max=40, message = "Session id length min = 2, max = 40")
     //TODO: @Pattern -> no whitespace allowed
     private String sessionId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime timestamp = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime timestamp;
 
-    @JsonProperty(required = true)
+    @NotNull
     @Size(min = 5, max=20, message = "Item type length min = 5, max = 20")
     private String type;
 
-    @JsonProperty(required = true)
+    @NotNull
     @Size(min = 5, max=20, message = "Item name length min = 5, max = 20")
     private String name;
 
@@ -89,5 +89,16 @@ public class ConsoleItem {
     }
 
 
-
+    @Override
+    public String toString() {
+        return "ConsoleItem{" +
+                "id=" + id +
+                ", sessionId='" + sessionId + '\'' +
+                ", timestamp=" + timestamp +
+                ", type='" + type + '\'' +
+                ", name='" + name + '\'' +
+                ", itemProperties=" + Arrays.toString(itemProperties) +
+                ", raw='" + raw + '\'' +
+                '}';
+    }
 }

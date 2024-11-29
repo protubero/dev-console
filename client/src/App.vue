@@ -1,8 +1,19 @@
 <script setup>
-import { reactive, onMounted } from 'vue'
+import {nextTick, useTemplateRef, reactive, onMounted } from 'vue'
 import {testData} from './testdata.mjs'
 
+const myDiv = useTemplateRef("myDiv");
 const items = reactive([])
+
+onMounted(async () => {
+  await nextTick();
+  const div = myDiv.value;
+  div.scrollTo({top: div.offsetHeight});
+});
+
+onMounted(() => {
+    connect();
+})
 
 function connect() {
      let ws = new WebSocket('ws://' + window.location.host + '/clientCommands');
@@ -25,36 +36,38 @@ function connect() {
 
     ws.onmessage = function(data){
         console.log(data)
-        items.push(JSON.parse(data.data))
-        console.log(items)
+
+        const msg = JSON.parse(data.data);
+
+        switch (msg.command) {
+          case 'reset':
+            break;
+          case 'items':
+            console.log("items")
+            items.push(... msg.payload)
+            // Scroll to the bottom of the page
+            window.scrollTo({
+              top: document.body.scrollHeight,
+              behavior: 'smooth' // Optional: Add smooth scrolling effect
+            });
+            break;
+          case 'sessions':
+            break;
+          default:
+            console.log(`Unknown command ${msg.command}.`);
+        }
+
     }
 }
-
-
-onMounted(() => {
-    connect();
-})
 
 </script>
 
 <template>
-    <div class="columns-2 gap-3">
+    <div ref="myDiv">
+        <div v-for="item in items" :key="item.id">
 
-        <div class="w-full">
-            <ul class="menu menu-xs bg-base-200 rounded-box w-56">
-              <li><a>Script run 1 dddaf dadsad dsadsa dsdas</a></li>
-              <li><a>Script run 2</a></li>
-            </ul>
+             {{ item.timestamp }} {{ item.type }} {{ item.name }}
         </div>
-
-        <div class="join join-vertical w-full">
-          <div v-for="item in items" :key="item.id"  class="collapse collapse-arrow bg-base-200">
-                <input type="radio" name="my-accordion-1"/>
-            <div class="collapse-title text-xl font-medium"><h1 class="text-lg text-gray-700">ss {{ item.type }}</h1></div>
-            <div class="collapse-content">Details </div>
-          </div>
-        </div>
-
     </div>
 </template>
 

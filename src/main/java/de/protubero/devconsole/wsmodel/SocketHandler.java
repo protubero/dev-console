@@ -1,35 +1,52 @@
-package com.example.messagingstompwebsocket.wsmodel;
+package de.protubero.devconsole.wsmodel;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.example.messagingstompwebsocket.controller.SessionInfo;
-import com.example.messagingstompwebsocket.wsmodel.ClientConsoleItem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.protubero.devconsole.model.ConsoleItem;
+import de.protubero.devconsole.model.SessionInfo;
 
-@Component
+@Service
 public final class SocketHandler extends TextWebSocketHandler {
 
-    private LinkedList<ClientSession> sessionList = new LinkedList<>();
-    private LinkedList<ClientConsoleItem> consoleItemList = new LinkedList<>();
+    private static final Logger logger = LoggerFactory.getLogger(SocketHandler.class);
+
+    private static AtomicLong idGenerator = new AtomicLong();
+
+    private LinkedList<SessionInfo> sessionList = new LinkedList<>();
+    private LinkedList<ConsoleItem> consoleItemList = new LinkedList<>();
 
     private final List<WebSocketSession> webSocketSessions = new ArrayList<>();
 
+    //private BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
+
     private ObjectMapper objectMapper;
 
-    public SocketHandler() {
-        objectMapper = new ObjectMapper();
+    public SocketHandler(ObjectMapper anObjectMapper) {
+        objectMapper = anObjectMapper;
+
+        logger.info("+++++++++++++++++++++");
     }
 
     @Override
@@ -42,8 +59,6 @@ public final class SocketHandler extends TextWebSocketHandler {
 
     @Override
     public synchronized void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        webSocketSessions.add(session);
-
         // send initial data to new client
         sendToOneSession(session, new ClientMessage("command", "reset"));
         sendToOneSession(session, new ClientMessage("sessions", sessionList));
@@ -74,33 +89,43 @@ public final class SocketHandler extends TextWebSocketHandler {
         }
     }
 
-    public synchronized void append(ClientConsoleItem clientItem)  {
-        sendToAllSessions(new ClientMessage("items", Collections.singletonList(clientItem)));
-        consoleItemList.add(clientItem);
+
+    private void sendToAllSessions(ClientMessage message) {
+        webSocketSessions.stream().forEach(wss -> sendToOneSession(wss, message));
     }
 
-    public synchronized void sessionInfo(SessionInfo sessionInfo) {
-        String sessionId = Objects.requireNonNull(sessionInfo.getSessionId());
-        ClientSession session = sessionMap.get(sessionId);
-        if (session == null) {
-            session = new ClientSession();
-            session.setSessionId(sessionId);
-            sessionMap.put(sessionId, session);
+    //
+    // External API
+    //
+    //
+
+    public void append(ConsoleItem clientItem)  {
+        clientItem.setId(idGenerator.incrementAndGet());
+        if (clientItem.getTimestamp() == null) {
+            clientItem.setTimestamp(LocalDateTime.now());
         }
-        if (sessionInfo.getName() != null) {
-            session.setName(sessionInfo.getName());
+
+        consoleItemList.add(clientItem);
+
+        sendToAllSessions(new ClientMessage("items", Collections.singletonList(clientItem)));
+    }
+
+    public void sessionInfo(SessionInfo sessionInfo) {
+        if (sessionInfo.getProperties() == null) {
+            sessionInfo.setProperties(new HashMap<>());
         }
-        if (sessionInfo.getProperties() != null) {
-            for (Map.Entry<String, String> entry : sessionInfo.getProperties().entrySet()) {
-                session.setProperty(entry.getKey(), entry.getValue());
-            }
+
+        Optional<SessionInfo> existingSession = sessionList.stream().filter(si -> si.getSessionId().equals(sessionInfo.getSessionId()))
+                .findFirst();
+        if (existingSession.isPresent()) {
+            existingSession.get().setName(sessionInfo.getName());
+            existingSession.get().getProperties().putAll(sessionInfo.getProperties());
+        } else {
+            sessionList.add(sessionInfo);
         }
 
         sendToAllSessions(new ClientMessage("sessions", sessionList));
     }
 
-    private void sendToAllSessions(ClientMessage message) {
-        webSocketSessions.stream().forEach(wss -> sendToOneSession(wss, message));
-    }
 
 }
