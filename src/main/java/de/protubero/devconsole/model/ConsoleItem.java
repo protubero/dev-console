@@ -20,11 +20,11 @@ public class ConsoleItem {
     private LocalDateTime timestamp;
 
     @NotNull
-    @Size(min = 5, max=20, message = "Item type length min = 5, max = 20")
+    @Size(min = 2, max=50, message = "Item type length min = 2, max = 50")
     private String type;
 
     @NotNull
-    @Size(min = 5, max=20, message = "Item name length min = 5, max = 20")
+    @Size(min = 5, max=50, message = "Item name length min = 5, max = 50")
     private String name;
 
     private ItemProperty[] itemProperties;

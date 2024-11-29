@@ -1,14 +1,27 @@
 <script setup>
-import {nextTick, useTemplateRef, reactive, onMounted } from 'vue'
+import {nextTick, useTemplateRef, onUpdated, reactive, onMounted } from 'vue'
 import {testData} from './testdata.mjs'
 
-const myDiv = useTemplateRef("myDiv");
 const items = reactive([])
+const selectedItem = reactive({ item: null })
 
-onMounted(async () => {
-  await nextTick();
-  const div = myDiv.value;
+let scroll = false;
+
+onUpdated(() => {
+console.log('updated')
+// Scroll to the bottom of the page
+if (scroll) {
+    scroll = false;
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: 'smooth' // Optional: Add smooth scrolling effect
+    });
+}
+/*
+  const div = logPaneDiv.value;
+  console.log(div.offsetHeight)
   div.scrollTo({top: div.offsetHeight});
+  */
 });
 
 onMounted(() => {
@@ -35,21 +48,14 @@ function connect() {
      };
 
     ws.onmessage = function(data){
-        console.log(data)
-
         const msg = JSON.parse(data.data);
 
         switch (msg.command) {
           case 'reset':
             break;
           case 'items':
-            console.log("items")
+            scroll = true;
             items.push(... msg.payload)
-            // Scroll to the bottom of the page
-            window.scrollTo({
-              top: document.body.scrollHeight,
-              behavior: 'smooth' // Optional: Add smooth scrolling effect
-            });
             break;
           case 'sessions':
             break;
@@ -60,13 +66,54 @@ function connect() {
     }
 }
 
+function selectItem(item) {
+    selectedItem.item = item;
+}
+
 </script>
 
 <template>
-    <div ref="myDiv">
-        <div v-for="item in items" :key="item.id">
+    <div ref="logPaneDiv" class="flex flex-row m-5 gap-x-4 min-w-120">
+        <!-- Item list -->
+        <div class="cursor-pointer flex-none w-80">
+            <div v-for="item in items" :key="item.id" class="overflow-hidden text-nowrap hover:bg-indigo-500 text-ellipsis w-80" @click="selectItem(item)">
+                 {{ item.timestamp }} {{ item.type }} {{ item.name }}
+            </div>
+        </div>
+        <!-- Details pane -->
+        <div v-if="selectedItem.item" class="top-4 min-w-80 flex-grow ">
+            <div class="sticky top-4">
 
-             {{ item.timestamp }} {{ item.type }} {{ item.name }}
+                <!-- Head infos -->
+                <div class="flex flex-row gap-x-1.5 mb-5">
+                    <div class="text-lg">{{ selectedItem.item.timestamp }}</div>
+                    <div class="text-lg">{{ selectedItem.item.type }}</div>
+                    <div class="text-lg">{{ selectedItem.item.name }}</div>
+                </div>
+
+                <!-- Item Properties -->
+                <div v-if="selectedItem.item.itemProperties">
+                  <table class="table-auto border-spacing-4  mb-5">
+                    <thead>
+                      <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="props in selectedItem.item.itemProperties">
+                        <th>{{ props.label }}</th>
+                        <td>{{ props.value }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Raw data -->
+                <div v-if="selectedItem.item.raw" class="rounded-box bg-slate-500 pl-4">
+                    {{selectedItem.item.raw}}
+                </div>
+            </div>
         </div>
     </div>
 </template>
