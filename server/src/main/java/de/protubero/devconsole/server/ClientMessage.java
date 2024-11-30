@@ -1,4 +1,4 @@
-package de.protubero.devconsole.wsmodel;
+package de.protubero.devconsole.server;
 
 public class ClientMessage {
 

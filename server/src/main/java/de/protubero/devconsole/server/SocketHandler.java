@@ -1,22 +1,15 @@
-package de.protubero.devconsole.wsmodel;
+package de.protubero.devconsole.server;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -24,8 +17,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.protubero.devconsole.model.ConsoleItem;
-import de.protubero.devconsole.model.SessionInfo;
+import de.protubero.devconsole.common.ConsoleItem;
+import de.protubero.devconsole.common.SessionInfo;
 
 @Service
 public final class SocketHandler extends TextWebSocketHandler {
@@ -34,8 +27,8 @@ public final class SocketHandler extends TextWebSocketHandler {
 
     private static AtomicLong idGenerator = new AtomicLong();
 
-    private LinkedList<SessionInfo> sessionList = new LinkedList<>();
-    private LinkedList<ConsoleItem> consoleItemList = new LinkedList<>();
+    private List<SessionInfo> sessionList = new ArrayList<>();
+    private List<ConsoleItem> consoleItemList = new ArrayList<>();
 
     private final List<WebSocketSession> webSocketSessions = new ArrayList<>();
 
@@ -58,11 +51,11 @@ public final class SocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public synchronized void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public synchronized void afterConnectionEstablished(WebSocketSession session) {
         // send initial data to new client
         sendToOneSession(session, new ClientMessage("command", "reset"));
-        sendToOneSession(session, new ClientMessage("sessions", sessionList));
-        sendToOneSession(session, new ClientMessage("items", consoleItemList));
+        sendToOneSession(session, new ClientMessage("sessions", sessionList.toArray(new SessionInfo[sessionList.size()])));
+        sendToOneSession(session, new ClientMessage("items", consoleItemList.toArray(new ConsoleItem[consoleItemList.size()])));
 
         webSocketSessions.add(session);
     }
@@ -77,14 +70,16 @@ public final class SocketHandler extends TextWebSocketHandler {
 
         TextMessage textMessage = new TextMessage(jsonItem);
 
-        if (session.isOpen()) {
-            try {
-                session.sendMessage(textMessage);
-            } catch (IllegalStateException exc) {
-                // ignore
-            } catch (IOException e) {
-                // ignore
-                //throw new RuntimeException(e);
+        synchronized (session) {
+            if (session.isOpen()) {
+                try {
+                    session.sendMessage(textMessage);
+                } catch (IllegalStateException exc) {
+                    // ignore
+                } catch (IOException e) {
+                    // ignore
+                    //throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -105,9 +100,11 @@ public final class SocketHandler extends TextWebSocketHandler {
             clientItem.setTimestamp(LocalDateTime.now());
         }
 
-        consoleItemList.add(clientItem);
+        synchronized (consoleItemList) {
+            consoleItemList.add(clientItem);
+        }
 
-        sendToAllSessions(new ClientMessage("items", Collections.singletonList(clientItem)));
+        sendToAllSessions(new ClientMessage("items", new ConsoleItem[]{ clientItem }));
     }
 
     public void sessionInfo(SessionInfo sessionInfo) {
@@ -121,10 +118,12 @@ public final class SocketHandler extends TextWebSocketHandler {
             existingSession.get().setName(sessionInfo.getName());
             existingSession.get().getProperties().putAll(sessionInfo.getProperties());
         } else {
-            sessionList.add(sessionInfo);
+            synchronized (sessionInfo) {
+                sessionList.add(sessionInfo);
+            }
         }
 
-        sendToAllSessions(new ClientMessage("sessions", sessionList));
+        sendToAllSessions(new ClientMessage("sessions", sessionList.toArray(new SessionInfo[sessionList.size()])));
     }
 
 

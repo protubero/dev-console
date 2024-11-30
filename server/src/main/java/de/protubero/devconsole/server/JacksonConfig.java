@@ -1,18 +1,17 @@
-package de.protubero.devconsole;
+package de.protubero.devconsole.server;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.validation.Validator;
 
 @Configuration
 public class JacksonConfig {
 
 
     @Bean
-    public ObjectMapper objectMapper(Validator validator) {
+    public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 

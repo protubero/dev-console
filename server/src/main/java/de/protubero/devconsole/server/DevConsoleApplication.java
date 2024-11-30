@@ -1,4 +1,4 @@
-package de.protubero.devconsole;
+package de.protubero.devconsole.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

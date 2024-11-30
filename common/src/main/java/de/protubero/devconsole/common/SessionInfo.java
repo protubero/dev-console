@@ -1,4 +1,4 @@
-package de.protubero.devconsole.model;
+package de.protubero.devconsole.common;
 
 import java.util.Map;
 

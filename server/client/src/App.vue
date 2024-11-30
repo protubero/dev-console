@@ -8,25 +8,25 @@ const selectedItem = reactive({ item: null })
 let scroll = false;
 
 onUpdated(() => {
-console.log('updated')
-// Scroll to the bottom of the page
-if (scroll) {
-    scroll = false;
-    window.scrollTo({
-      top: document.body.scrollHeight,
-      behavior: 'smooth' // Optional: Add smooth scrolling effect
-    });
-}
-/*
-  const div = logPaneDiv.value;
-  console.log(div.offsetHeight)
-  div.scrollTo({top: div.offsetHeight});
-  */
+    // Scroll to the bottom of the page
+    if (scroll) {
+        scroll = false;
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: 'smooth' // Optional: Add smooth scrolling effect
+        });
+    }
 });
 
 onMounted(() => {
     connect();
 })
+
+function clearArray(array) {
+  while (array.length > 0) {
+    array.pop();
+  }
+}
 
 function connect() {
      let ws = new WebSocket('ws://' + window.location.host + '/clientCommands');
@@ -52,9 +52,11 @@ function connect() {
 
         switch (msg.command) {
           case 'reset':
+            clearArray(items);
             break;
           case 'items':
             scroll = true;
+            console.log('items')
             items.push(... msg.payload)
             break;
           case 'sessions':
@@ -73,6 +75,7 @@ function selectItem(item) {
 </script>
 
 <template>
+    <div class="bg-slate-200 sticky top-0">SIZE: {{items.length}}</div>
     <div ref="logPaneDiv" class="flex flex-row m-5 gap-x-4 min-w-120">
         <!-- Item list -->
         <div class="cursor-pointer flex-none w-80">
@@ -116,33 +119,7 @@ function selectItem(item) {
             </div>
         </div>
     </div>
+    <div class="bg-slate-200 sticky bottom-0">SIZE: {{items.length}}</div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
