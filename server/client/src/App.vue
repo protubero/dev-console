@@ -1,9 +1,11 @@
 <script setup>
-import {nextTick, useTemplateRef, onUpdated, reactive, onMounted } from 'vue'
+import {nextTick, useTemplateRef, onUpdated, watchEffect, reactive, onMounted } from 'vue'
 import {testData} from './testdata.mjs'
 
 const items = reactive([])
 const selectedItem = reactive({ item: null })
+
+const selectedRawItem = reactive({ rawItem: null })
 
 let scroll = false;
 
@@ -56,7 +58,6 @@ function connect() {
             break;
           case 'items':
             scroll = true;
-            console.log('items')
             items.push(... msg.payload)
             break;
           case 'sessions':
@@ -70,6 +71,12 @@ function connect() {
 
 function selectItem(item) {
     selectedItem.item = item;
+
+     if (selectedItem.item.raw && selectedItem.item.raw.length > 0) {
+       selectedRawItem.rawItem = item.raw[0];
+     } else {
+       selectedRawItem.rawItem = null;
+     }
 }
 
 </script>
@@ -80,7 +87,7 @@ function selectItem(item) {
         <!-- Item list -->
         <div class="cursor-pointer flex-none w-80">
             <div v-for="item in items" :key="item.id" class="overflow-hidden text-nowrap hover:bg-indigo-500 text-ellipsis w-80" @click="selectItem(item)">
-                 {{ item.timestamp }} {{ item.type }} {{ item.name }}
+                 {{ item.timestamp.split(' ')[1] }} {{ item.type }} {{ item.name }}
             </div>
         </div>
         <!-- Details pane -->
@@ -89,32 +96,24 @@ function selectItem(item) {
 
                 <!-- Head infos -->
                 <div class="flex flex-row gap-x-1.5 mb-5">
-                    <div class="text-lg">{{ selectedItem.item.timestamp }}</div>
+                    <div class="text-lg">{{ selectedItem.item.timestamp.split(' ')[1] }}</div>
                     <div class="text-lg">{{ selectedItem.item.type }}</div>
                     <div class="text-lg">{{ selectedItem.item.name }}</div>
                 </div>
 
-                <!-- Item Properties -->
-                <div v-if="selectedItem.item.itemProperties">
-                  <table class="table-auto border-spacing-4  mb-5">
-                    <thead>
-                      <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="props in selectedItem.item.itemProperties">
-                        <th>{{ props.label }}</th>
-                        <td>{{ props.value }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <!-- HTML Text -->
+                <div v-if="selectedItem.item.htmlText" v-html="selectedItem.item.htmlText"></div>
 
                 <!-- Raw data -->
-                <div v-if="selectedItem.item.raw" class="rounded-box bg-slate-500 pl-4">
-                    {{selectedItem.item.raw}}
+                <div v-if="selectedItem.item.raw" role="tablist" class="tabs">
+                  <a v-for="raw in selectedItem.item.raw"
+                        role="tab"
+                        @click="selectedRawItem.rawItem = raw"
+                        class="tab { tab-active: selectedRawItem.rawItem == raw }" >{{raw.label}}</a>
+                </div>
+
+                <div v-if="selectedRawItem.rawItem">
+                    <pre class="rounded-box bg-slate-500 pl-4">{{selectedRawItem.rawItem.value}}</pre>
                 </div>
             </div>
         </div>

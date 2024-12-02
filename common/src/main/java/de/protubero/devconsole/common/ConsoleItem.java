@@ -1,7 +1,6 @@
 package de.protubero.devconsole.common;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -29,7 +28,7 @@ public class ConsoleItem {
     //TODO: @Pattern -> no whitespace allowed
     private String sessionId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     private LocalDateTime timestamp;
 
     @NotNull
@@ -40,25 +39,8 @@ public class ConsoleItem {
     @Size(min = 5, max=50, message = "Item name length min = 5, max = 50")
     private String name;
 
-    private List<ItemProperty> itemProperties;
+    private List<RawContent> raw;
 
-    @Size(max=4000, message = "Raw text max = 4000")
-    private String raw;
+    private String htmlText;
 
-
-/*
-    @Override
-    public String toString() {
-        return "ConsoleItem{" +
-                "id=" + id +
-                ", sessionId='" + sessionId + '\'' +
-                ", timestamp=" + timestamp +
-                ", type='" + type + '\'' +
-                ", name='" + name + '\'' +
-                ", itemProperties=" + Arrays.toString(itemProperties) +
-                ", raw='" + raw + '\'' +
-                '}';
-    }
-
- */
 }

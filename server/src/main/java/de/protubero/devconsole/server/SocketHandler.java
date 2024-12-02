@@ -38,8 +38,6 @@ public final class SocketHandler extends TextWebSocketHandler {
 
     public SocketHandler(ObjectMapper anObjectMapper) {
         objectMapper = anObjectMapper;
-
-        logger.info("+++++++++++++++++++++");
     }
 
     @Override
@@ -60,33 +58,37 @@ public final class SocketHandler extends TextWebSocketHandler {
         webSocketSessions.add(session);
     }
 
-    private void sendToOneSession(WebSocketSession session, ClientMessage message) {
-        String jsonItem;
-        try {
-            jsonItem = objectMapper.writeValueAsString(message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    private void sendToOneSession(WebSocketSession session, ClientMessage clientMessage) {
+        sendToOneSession(session, asTextMessage(clientMessage));
+    }
 
-        TextMessage textMessage = new TextMessage(jsonItem);
-
-        synchronized (session) {
-            if (session.isOpen()) {
-                try {
-                    session.sendMessage(textMessage);
-                } catch (IllegalStateException exc) {
-                    // ignore
-                } catch (IOException e) {
-                    // ignore
-                    //throw new RuntimeException(e);
-                }
+    private synchronized void sendToOneSession(WebSocketSession session, TextMessage message) {
+        if (session.isOpen()) {
+            try {
+                session.sendMessage(message);
+            } catch (IllegalStateException exc) {
+                // ignore
+            } catch (IOException e) {
+                // ignore
+                //throw new RuntimeException(e);
             }
         }
     }
 
+    private TextMessage asTextMessage(Object obj) {
+        String jsonItem;
+        try {
+            jsonItem = objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new TextMessage(jsonItem);
+    }
 
     private void sendToAllSessions(ClientMessage message) {
-        webSocketSessions.stream().forEach(wss -> sendToOneSession(wss, message));
+        TextMessage textMessage = asTextMessage(message);
+        webSocketSessions.stream().forEach(wss -> sendToOneSession(wss, textMessage));
     }
 
     //
@@ -94,20 +96,20 @@ public final class SocketHandler extends TextWebSocketHandler {
     //
     //
 
-    public void append(ConsoleItem clientItem)  {
+    public synchronized void append(ConsoleItem clientItem)  {
         clientItem.setId(idGenerator.incrementAndGet());
         if (clientItem.getTimestamp() == null) {
             clientItem.setTimestamp(LocalDateTime.now());
         }
-
-        synchronized (consoleItemList) {
-            consoleItemList.add(clientItem);
+        if (clientItem.getRaw() != null && clientItem.getRaw().size() == 0) {
+            clientItem.setRaw(null);
         }
 
+        consoleItemList.add(clientItem);
         sendToAllSessions(new ClientMessage("items", new ConsoleItem[]{ clientItem }));
     }
 
-    public void sessionInfo(SessionInfo sessionInfo) {
+    public synchronized void sessionInfo(SessionInfo sessionInfo) {
         if (sessionInfo.getProperties() == null) {
             sessionInfo.setProperties(new HashMap<>());
         }

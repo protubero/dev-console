@@ -1,20 +1,20 @@
 package de.protubero.devconsole.client;
 
-import java.util.Collections;
 import java.util.List;
 
 import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.ItemProperty;
+import de.protubero.devconsole.common.RawContent;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
         var client = DevConsoleClient.of("localhost", 8080);
 
         var item = ConsoleItem.builder()
-                .raw("raw")
                 .name("CreatePurchaseTransaction")
                 .type("Command")
-                .itemProperties(List.of(ItemProperty.of("my key", "my value")))
+                .htmlText("a <b>simple</b> text")
+                .raw(List.of(RawContent.of("my key", "my value"),
+                        RawContent.of("my key2", "my value2")))
                 .sessionId("xyz")
                 .build();
 

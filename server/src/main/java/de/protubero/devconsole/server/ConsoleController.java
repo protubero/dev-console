@@ -41,7 +41,7 @@ public class ConsoleController {
 
     @PostMapping("/append")
     public void append(@Valid @RequestBody ConsoleItem item) throws Exception {
-		logger.info("############ request no " + requestCount.incrementAndGet());
+        logger.debug("Receiving item {}", item);
         socketHandler.append(item);
     }
 

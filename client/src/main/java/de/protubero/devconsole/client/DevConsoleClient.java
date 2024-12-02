@@ -4,7 +4,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +27,11 @@ public final class DevConsoleClient {
 
     private HttpClient httpClient;
 
-    public DevConsoleClient(String aHost, int aPort) {
-        this.host = aHost;
+    private DevConsoleClient(String aHost, int aPort) {
+        this.host = Objects.requireNonNull(aHost);
         this.port = aPort;
+
+        logger.info("Create DevConsoleClient with host {} and port {}", host, port);
 
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -49,14 +53,18 @@ public final class DevConsoleClient {
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            httpClient.sendAsync(request, responseInfo -> {
-                if (responseInfo.statusCode() != 200) {
-                    logger.error("Error sending items to dev console");
+            CompletableFuture<HttpResponse<String>> response = HttpClient.newBuilder()
+                    .build()
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString());
+            response.thenAccept(res -> {
+                if (res.statusCode() != 200) {
+                    logger.error("Error reaching dev console, status code={}", res.statusCode());
+                    logger.error(res.body());
                 }
-                return null;
             });
+
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new AssertionError(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
