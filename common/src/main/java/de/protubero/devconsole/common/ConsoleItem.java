@@ -23,9 +23,13 @@ public class ConsoleItem {
 
     private long id;
 
+    private int version;
+
+    @NotNull
+    private String clientId;
+
     @NotNull
     @Size(min = 2, max=40, message = "Session id length min = 2, max = 40")
-    //TODO: @Pattern -> no whitespace allowed
     private String sessionId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
@@ -36,7 +40,7 @@ public class ConsoleItem {
     private String type;
 
     @NotNull
-    @Size(min = 5, max=50, message = "Item name length min = 5, max = 50")
+    @Size(min = 2, max=50, message = "Item name length min = 5, max = 50")
     private String name;
 
     private List<RawContent> raw;

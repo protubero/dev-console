@@ -1,11 +1,12 @@
 <script setup>
 import {nextTick, useTemplateRef, onUpdated, watchEffect, reactive, onMounted } from 'vue'
-import {testData} from './testdata.mjs'
+
 
 const items = reactive([])
+const sessions = reactive([])
 const selectedItem = reactive({ item: null })
 
-const selectedRawItem = reactive({ rawItem: null })
+const selectedRawItem = reactive({ rawItem: null, consoleItem: null })
 
 let scroll = false;
 
@@ -60,7 +61,41 @@ function connect() {
             scroll = true;
             items.push(... msg.payload)
             break;
-          case 'sessions':
+          case 'update':
+            const foundItemIdx = items.findIndex(({ id }) => id === msg.payload.id);
+            console.log(foundItemIdx)
+            if (foundItemIdx > -1) {
+                let foundItem = items[foundItemIdx]
+                console.log(foundItem)
+                foundItem.raw = msg.payload.raw
+                foundItem.htmlText = msg.payload.htmlText
+                foundItem.name = msg.payload.name
+                foundItem.type = msg.payload.type
+                foundItem.version = msg.payload.version
+                foundItem.timestamp = msg.payload.timestamp
+
+                // trigger reactivity
+                items[foundItemIdx] = foundItem
+
+                if (selectedRawItem.consoleItem.id === foundItem.id) {
+                    if (foundItem.raw == null || foundItem.raw.length == 0) {
+                        selectedRawItem.consoleItem = null;
+                        selectedRawItem.rawItem = null;
+                    } else {
+                        const foundRawIdx = foundItem.raw.findIndex(({ label }) => label === selectedRawItem.rawItem.label);
+                        if (foundRawIdx == -1) {
+                            selectedRawItem.consoleItem = null;
+                            selectedRawItem.rawItem = null;
+                        } else {
+                            console.log("update log")
+
+                            selectedRawItem.rawItem = foundItem.raw[foundRawIdx];
+                        }
+                    }
+                }
+            } else {
+                console.log("Console item not found: " + msg.payload.id)
+            }
             break;
           default:
             console.log(`Unknown command ${msg.command}.`);
@@ -74,19 +109,32 @@ function selectItem(item) {
 
      if (selectedItem.item.raw && selectedItem.item.raw.length > 0) {
        selectedRawItem.rawItem = item.raw[0];
+       selectedRawItem.consoleItem = item;
      } else {
        selectedRawItem.rawItem = null;
+       selectedRawItem.consoleItem = null;
      }
+}
+
+function clearItems() {
+  clearArray(items);
 }
 
 </script>
 
 <template>
-    <div class="bg-slate-200 sticky top-0">SIZE: {{items.length}}</div>
+    <div class="flex flex-row bg-slate-200 sticky top-0">
+        <div class="">SIZE: {{items.length}}</div>
+        <div class="flex-grow"></div>
+        <div class="">
+            <a @click="clearItems()">Clear</a>
+        </div>
+    </div>
     <div ref="logPaneDiv" class="flex flex-row m-5 gap-x-4 min-w-120">
         <!-- Item list -->
-        <div class="cursor-pointer flex-none w-80">
-            <div v-for="item in items" :key="item.id" class="overflow-hidden text-nowrap hover:bg-indigo-500 text-ellipsis w-80" @click="selectItem(item)">
+        <div class="cursor-pointer flex-none w-80 h-full overflow-y-auto">
+            <div v-for="item in items" :key="item.id" class="overflow-hidden text-nowrap hover:bg-indigo-500 text-ellipsis w-80"
+                :class="{ 'font-bold': selectedItem.item == item }" @click="selectItem(item)">
                  {{ item.timestamp.split(' ')[1] }} {{ item.type }} {{ item.name }}
             </div>
         </div>

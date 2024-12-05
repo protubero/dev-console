@@ -6,10 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class RawContent {
+
 
     @Size(max=100, message = "Raw label text max = 100")
     @NotNull
@@ -25,4 +28,5 @@ public class RawContent {
         prop.value = Objects.requireNonNull(aValue);
         return prop;
     }
+
 }

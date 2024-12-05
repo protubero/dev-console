@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.SessionInfo;
+import de.protubero.devconsole.common.LogItem;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 
@@ -34,15 +34,17 @@ public class ConsoleController {
     }
 
 
-    @PostMapping("/describe")
-    public void describe(@Valid @RequestBody SessionInfo sessionInfo) {
-        socketHandler.sessionInfo(sessionInfo);
-    }
 
     @PostMapping("/append")
     public void append(@Valid @RequestBody ConsoleItem item) throws Exception {
-        logger.debug("Receiving item {}", item);
+        logger.debug("Receiving console item {}", item);
         socketHandler.append(item);
+    }
+
+    @PostMapping("/log")
+    public void append(@Valid @RequestBody LogItem item) throws Exception {
+        logger.debug("Receiving log item {}", item);
+        socketHandler.log(item);
     }
 
     @ResponseStatus(org.springframework.http.HttpStatus.BAD_REQUEST)

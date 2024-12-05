@@ -3,14 +3,16 @@ package de.protubero.devconsole.server;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -18,21 +20,71 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.SessionInfo;
+import de.protubero.devconsole.common.LogItem;
+import de.protubero.devconsole.common.RawContent;
+import jakarta.validation.Valid;
 
 @Service
 public final class SocketHandler extends TextWebSocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(SocketHandler.class);
 
+
+    private class DevConsoleWebSession {
+        private WebSocketSession session;
+        private BlockingQueue<TextMessage> outbox = new LinkedBlockingQueue<>();
+        private Thread thread;
+
+        public DevConsoleWebSession(WebSocketSession aSession) {
+            this.session = aSession;
+        }
+
+        public void start() {
+            thread = new Thread(() -> {
+                try {
+                    TextMessage msg;
+                    boolean sessionIsStillOpen = true;
+                    do {
+                        msg = outbox.take();
+
+                        if (session.isOpen()) {
+                            try {
+                                session.sendMessage(msg);
+                            } catch (IllegalStateException ise) {
+                                // ignore
+                                logger.error("Error sending msg to client", ise);
+                            } catch (IOException e) {
+                                // ignore
+                                logger.error("Error sending msg to client", e);
+                                //throw new RuntimeException(e);
+                            }
+                        } else {
+                            logger.info("Web Socket already closed");
+                        }
+
+                    } while (session.isOpen());
+                } catch (InterruptedException exc) {
+                    logger.info("Session Thread interrupted");
+                }
+                logger.info("Close Web Socket Output Thread");
+            });
+
+            thread.start();
+        }
+
+        public void send(TextMessage message) {
+            if (thread.isAlive()) {
+                outbox.offer(message);
+            }
+        }
+    }
+
     private static AtomicLong idGenerator = new AtomicLong();
 
-    private List<SessionInfo> sessionList = new ArrayList<>();
     private List<ConsoleItem> consoleItemList = new ArrayList<>();
 
-    private final List<WebSocketSession> webSocketSessions = new ArrayList<>();
+    private final List<DevConsoleWebSession> devConsoleSessions = new ArrayList<>();
 
-    //private BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
 
     private ObjectMapper objectMapper;
 
@@ -49,30 +101,25 @@ public final class SocketHandler extends TextWebSocketHandler {
     }
 
     @Override
+    public synchronized void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        logger.info("Web Socket closed {}", status);
+    }
+
+    @Override
     public synchronized void afterConnectionEstablished(WebSocketSession session) {
+        logger.info("Web Socket connected {}", session);
+
+        DevConsoleWebSession devConsoleWebSession = new DevConsoleWebSession(session);
+        devConsoleSessions.add(devConsoleWebSession);
+        devConsoleWebSession.start();
+
         // send initial data to new client
-        sendToOneSession(session, new ClientMessage("command", "reset"));
-        sendToOneSession(session, new ClientMessage("sessions", sessionList.toArray(new SessionInfo[sessionList.size()])));
-        sendToOneSession(session, new ClientMessage("items", consoleItemList.toArray(new ConsoleItem[consoleItemList.size()])));
+        devConsoleWebSession.send(asTextMessage(new ClientMessage("reset", "")));
 
-        webSocketSessions.add(session);
-    }
+        // Attention! By copying the list into an array we also make sure to have an immutable snapshot
+        // of the item list, which is required!
+        devConsoleWebSession.send(asTextMessage(new ClientMessage("items", consoleItemList.toArray(new ConsoleItem[consoleItemList.size()]))));
 
-    private void sendToOneSession(WebSocketSession session, ClientMessage clientMessage) {
-        sendToOneSession(session, asTextMessage(clientMessage));
-    }
-
-    private synchronized void sendToOneSession(WebSocketSession session, TextMessage message) {
-        if (session.isOpen()) {
-            try {
-                session.sendMessage(message);
-            } catch (IllegalStateException exc) {
-                // ignore
-            } catch (IOException e) {
-                // ignore
-                //throw new RuntimeException(e);
-            }
-        }
     }
 
     private TextMessage asTextMessage(Object obj) {
@@ -88,15 +135,91 @@ public final class SocketHandler extends TextWebSocketHandler {
 
     private void sendToAllSessions(ClientMessage message) {
         TextMessage textMessage = asTextMessage(message);
-        webSocketSessions.stream().forEach(wss -> sendToOneSession(wss, textMessage));
+        devConsoleSessions.stream().forEach(wss -> wss.send(textMessage));
     }
 
     //
     // External API
     //
     //
+    public synchronized void log(@Valid LogItem logItem) {
+        Optional<ConsoleItem> existingItem = consoleItemList.stream().filter(item -> item.getClientId().equals(logItem.getClientId()))
+                .findAny();
+        if (existingItem.isEmpty()) {
+            throw new RuntimeException();
+        }
+        ConsoleItem currentItem = existingItem.get();
+        if (!currentItem.getSessionId().equals(logItem.getSessionId())) {
+            throw new RuntimeException("Different session ids");
+        }
+        List<RawContent> existingContent = currentItem.getRaw();
+        if (existingContent == null) {
+            currentItem.setRaw(List.of(RawContent.of(logItem.getLabel(), logItem.getText())));
+        } else {
+            Optional<RawContent> exRcWithSameLabel = existingContent.stream()
+                    .filter(rc -> rc.getLabel().equals(logItem.getLabel())).findAny();
+            if (exRcWithSameLabel.isPresent()) {
+                exRcWithSameLabel.get().setValue(exRcWithSameLabel.get().getValue() + logItem.getText());
+            } else {
+                ArrayList<RawContent> nextList = new ArrayList<>(existingContent);
+                nextList.add(RawContent.of(logItem.getLabel(), logItem.getText()));
+                currentItem.setRaw(List.of(nextList.toArray(new RawContent[nextList.size()])));
+            }
+        }
 
-    public synchronized void append(ConsoleItem clientItem)  {
+        logger.info(String.valueOf(logItem));
+        sendToAllSessions(new ClientMessage("update", currentItem));
+    }
+
+
+    public synchronized void append(ConsoleItem clientItem) {
+        if (clientItem.getVersion() > 1) {
+            if (clientItem.getClientId() == null) {
+                throw new RuntimeException("Missing client id");
+            }
+            Optional<ConsoleItem> existingItem = consoleItemList.stream().filter(item -> item.getClientId().equals(clientItem.getClientId()))
+                    .findAny();
+            if (existingItem.isPresent()) {
+                ConsoleItem currentItem = existingItem.get();
+                if (clientItem.getVersion() != currentItem.getVersion() + 1) {
+                    logger.error("Discard message");
+                    throw new RuntimeException("");
+                } else {
+                    if (!currentItem.getSessionId().equals(clientItem.getSessionId())) {
+                        throw new RuntimeException("Different session ids");
+                    }
+
+                    // update existing item with values from newer version
+                    currentItem.setName(clientItem.getName());
+                    if (clientItem.getRaw() != null && clientItem.getRaw().size() > 0) {
+                        List<RawContent> existingContent = currentItem.getRaw();
+                        if (existingContent == null) {
+                            existingContent = List.of();
+                            currentItem.setRaw(existingContent);
+                        }
+                        for (RawContent newContent : clientItem.getRaw()) {
+                            Optional<RawContent> exRcWithSameLabel = existingContent.stream()
+                                    .filter(rc -> rc.getLabel().equals(newContent.getLabel())).findAny();
+                            if (exRcWithSameLabel.isPresent()) {
+                                exRcWithSameLabel.get().setValue(newContent.getValue());
+                            } else {
+                                existingContent.add(newContent);
+                            }
+                        }
+                    }
+                    currentItem.setType(clientItem.getType());
+                    currentItem.setHtmlText(clientItem.getHtmlText());
+                    currentItem.setVersion(clientItem.getVersion());
+                    if (clientItem.getTimestamp() != null) {
+                        currentItem.setTimestamp(clientItem.getTimestamp());
+                    }
+
+                    sendToAllSessions(new ClientMessage("update", currentItem));
+                }
+                return;
+            }
+        }
+
         clientItem.setId(idGenerator.incrementAndGet());
         if (clientItem.getTimestamp() == null) {
             clientItem.setTimestamp(LocalDateTime.now());
@@ -106,27 +229,16 @@ public final class SocketHandler extends TextWebSocketHandler {
         }
 
         consoleItemList.add(clientItem);
-        sendToAllSessions(new ClientMessage("items", new ConsoleItem[]{ clientItem }));
+        sendToAllSessions(new ClientMessage("items", new ConsoleItem[]{clientItem}));
     }
 
-    public synchronized void sessionInfo(SessionInfo sessionInfo) {
-        if (sessionInfo.getProperties() == null) {
-            sessionInfo.setProperties(new HashMap<>());
-        }
 
-        Optional<SessionInfo> existingSession = sessionList.stream().filter(si -> si.getSessionId().equals(sessionInfo.getSessionId()))
-                .findFirst();
-        if (existingSession.isPresent()) {
-            existingSession.get().setName(sessionInfo.getName());
-            existingSession.get().getProperties().putAll(sessionInfo.getProperties());
-        } else {
-            synchronized (sessionInfo) {
-                sessionList.add(sessionInfo);
-            }
-        }
+    /*
+    public synchronized void update(@Valid ConsoleItem item) {
+        for (int i = 0; i < ) {
 
-        sendToAllSessions(new ClientMessage("sessions", sessionList.toArray(new SessionInfo[sessionList.size()])));
+        }
     }
-
+    */
 
 }
