@@ -1,0 +1,20 @@
+
+icons für vordefinierte events
+schick
+scrolling funktioniert richtig
+
+reserved tags -> Hervorhebung (dynamisch) warn / error / info icon
+
+clear-client
+clear-server (delete up to ...)
+
+Page Numbers ...
+
+-page clear-client control message
+
+-----
+tag/filter-scheme
+retain-limit message count or size
+Dark mode
+Session Summary Page (Send updatable HTML)
+

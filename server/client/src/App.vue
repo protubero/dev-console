@@ -1,5 +1,6 @@
 <script setup>
 import {nextTick, useTemplateRef, onUpdated, watchEffect, reactive, onMounted } from 'vue'
+import IconCommand from './components/icons/IconCommand.vue'
 
 
 const items = reactive([])
@@ -135,7 +136,7 @@ function clearItems() {
         <div class="cursor-pointer flex-none w-80 h-full overflow-y-auto">
             <div v-for="item in items" :key="item.id" class="overflow-hidden text-nowrap hover:bg-indigo-500 text-ellipsis w-80"
                 :class="{ 'font-bold': selectedItem.item == item }" @click="selectItem(item)">
-                 {{ item.timestamp.split(' ')[1] }} {{ item.type }} {{ item.name }}
+                 {{ item.timestamp.split(' ')[1] }} <component :is="IconCommand" /> {{ item.name }}
             </div>
         </div>
         <!-- Details pane -->

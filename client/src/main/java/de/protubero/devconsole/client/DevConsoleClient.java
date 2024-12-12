@@ -34,6 +34,8 @@ public final class DevConsoleClient {
 
     private HttpClient httpClient;
 
+    private Thread outboxThread;
+
     private DevConsoleClient(String aHost, int aPort) {
         this.host = Objects.requireNonNull(aHost);
         this.port = aPort;
@@ -45,13 +47,12 @@ public final class DevConsoleClient {
 
         httpClient = HttpClient.newBuilder().build();
 
-        Thread outboxThread = new Thread(() -> {
+        outboxThread = new Thread(() -> {
             while (true) {
                 try {
                     HttpRequest request = outbox.take();
 
-                    HttpResponse<String> response = HttpClient.newBuilder()
-                            .build()
+                    HttpResponse<String> response = httpClient
                             .send(request, HttpResponse.BodyHandlers.ofString());
                     if (response.statusCode() != 200) {
                         logger.error("Error sending to dev console, status code={}", response.statusCode());
@@ -65,6 +66,15 @@ public final class DevConsoleClient {
             }
         });
         outboxThread.start();
+    }
+
+    public void close() {
+        logger.info("Shutting down console thread");
+
+        //TODO use poison pill to stop the thread
+        // in order to ensure that all messages are sent which are in the pipeline
+        // at this point in time
+        outboxThread.interrupt();
     }
 
     public static DevConsoleClient of(String aHost, int aPort) {
