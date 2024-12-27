@@ -6,12 +6,12 @@
 	<artifactId>parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>RP Workbench Console</name>
+	<name>RP Workbench Viewer</name>
 	<description></description>
 	<modules>
-		<module>server</module>
-		<module>client</module>
-		<module>common</module>
+		<!--module>workbench-viewer-webapp</module-->
+		<module>workbench-viewer-client</module>
+		<module>workbench-viewer-common</module>
 	</modules>
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>

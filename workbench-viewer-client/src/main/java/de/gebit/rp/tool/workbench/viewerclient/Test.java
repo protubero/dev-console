@@ -1,4 +1,4 @@
-package de.protubero.devconsole.client;
+package de.gebit.rp.tool.workbench.viewerclient;
 
 import java.util.Date;
 import java.util.List;
@@ -8,7 +8,7 @@ import de.protubero.devconsole.common.RawContent;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
-        var client = DevConsoleClient.of("localhost", 8080);
+        var client = WorkbenchViewerClient.of("localhost", 8080);
 
         var logConsoleItem = ConsoleItem.builder()
                 .name("Log")

@@ -1,4 +1,4 @@
-package de.protubero.devconsole.client;
+package de.gebit.rp.tool.workbench.viewerclient;
 
 import java.io.IOException;
 import java.net.URI;
@@ -9,7 +9,6 @@ import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
@@ -21,9 +20,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.protubero.devconsole.common.ConsoleItem;
 import de.protubero.devconsole.common.LogItem;
 
-public final class DevConsoleClient {
+public final class WorkbenchViewerClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(DevConsoleClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(WorkbenchViewerClient.class);
 
     private String host;
     private int port;
@@ -36,7 +35,7 @@ public final class DevConsoleClient {
 
     private Thread outboxThread;
 
-    private DevConsoleClient(String aHost, int aPort) {
+    private WorkbenchViewerClient(String aHost, int aPort) {
         this.host = Objects.requireNonNull(aHost);
         this.port = aPort;
 
@@ -77,8 +76,8 @@ public final class DevConsoleClient {
         outboxThread.interrupt();
     }
 
-    public static DevConsoleClient of(String aHost, int aPort) {
-        return new DevConsoleClient(aHost, aPort);
+    public static WorkbenchViewerClient of(String aHost, int aPort) {
+        return new WorkbenchViewerClient(aHost, aPort);
     }
 
     public void append(ConsoleItem aConsoleItem, String label, String text) {

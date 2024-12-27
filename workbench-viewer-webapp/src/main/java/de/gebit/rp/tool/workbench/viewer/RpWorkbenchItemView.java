@@ -1,19 +1,15 @@
-package com.example.application;
+package de.gebit.rp.tool.workbench.viewer;
 
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.example.application.server.LogItemDatabase;
-import com.example.application.server.LogItemDatabaseListener;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;

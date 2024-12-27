@@ -1,4 +1,4 @@
-package com.example.application.server;
+package de.gebit.rp.tool.workbench.viewer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
