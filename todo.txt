@@ -2,9 +2,9 @@
 Layout Change
 - Item list -> Item Card List
 - Umschaltbar: Details View Overlay vs. Side by side & Splitter
-- icons für vordefinierte events
 - schicker
 - scrolling funktioniert richtig
+- client-side validation
 
 badges
 - badges[] item field

@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.vaadin.flow.shared.Registration;
-import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.LogItem;
-import de.protubero.devconsole.common.RawContent;
+import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
+import de.gebit.rp.tool.workbench.viewercommon.LogItem;
+import de.gebit.rp.tool.workbench.viewercommon.RawContent;
 
 @Service
 public class LogItemDatabase {
@@ -32,6 +32,7 @@ public class LogItemDatabase {
     private Map<String, LogItemDatabaseListener> listenerMap = new HashMap<>();
 
     public LogItemDatabase() {
+        /*
         String sessionId = "xyz";
         new Thread(() -> {
             for (int i = 0; i < 1000; i++) {
@@ -72,7 +73,7 @@ public class LogItemDatabase {
                     throw new RuntimeException(e);
                 }
             }}).start();
-
+        */
     }
 
     public List<ConsoleItem> getConsoleItemList() {
@@ -90,17 +91,29 @@ public class LogItemDatabase {
             throw new RuntimeException("Different session ids");
         }
         List<RawContent> existingContent = currentItem.getRaw();
-        if (existingContent == null) {
-            currentItem.setRaw(List.of(RawContent.of(logItem.getLabel(), logItem.getText())));
-        } else {
-            Optional<RawContent> exRcWithSameLabel = existingContent.stream()
-                    .filter(rc -> rc.getLabel().equals(logItem.getLabel())).findAny();
-            if (exRcWithSameLabel.isPresent()) {
-                exRcWithSameLabel.get().setValue(exRcWithSameLabel.get().getValue() + logItem.getText());
-            } else {
-                ArrayList<RawContent> nextList = new ArrayList<>(existingContent);
-                nextList.add(RawContent.of(logItem.getLabel(), logItem.getText()));
-                currentItem.setRaw(List.of(nextList.toArray(new RawContent[nextList.size()])));
+        switch (logItem.getType()) {
+            case raw -> {
+                var rawContentLog = logItem.getRawContentLog();
+                if (existingContent == null) {
+                    currentItem.setRaw(List.of(RawContent.of(rawContentLog.getLabel(), rawContentLog.getText())));
+                } else {
+                    Optional<RawContent> exRcWithSameLabel = existingContent.stream()
+                            .filter(rc -> rc.getLabel().equals(rawContentLog.getLabel())).findAny();
+                    if (exRcWithSameLabel.isPresent()) {
+                        exRcWithSameLabel.get().setValue(exRcWithSameLabel.get().getValue() + rawContentLog.getText());
+                    } else {
+                        ArrayList<RawContent> nextList = new ArrayList<>(existingContent);
+                        nextList.add(RawContent.of(rawContentLog.getLabel(), rawContentLog.getText()));
+                        currentItem.setRaw(List.of(nextList.toArray(new RawContent[nextList.size()])));
+                    }
+                }
+            }
+            case badge -> {
+                logger.info("add badge " + logItem.getBadge());
+                if (currentItem.getBadges() == null) {
+                    currentItem.setBadges(new ArrayList<>());
+                    currentItem.getBadges().add(logItem.getBadge());
+                }
             }
         }
 
@@ -198,4 +211,7 @@ public class LogItemDatabase {
         };
     }
 
+    public void clear() {
+        consoleItemList.clear();
+    }
 }

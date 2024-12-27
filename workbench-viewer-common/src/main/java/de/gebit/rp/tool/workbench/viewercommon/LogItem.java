@@ -18,16 +18,17 @@ import lombok.ToString;
 public class LogItem {
 
     @NotNull
+    private LogItemType type;
+
+    @NotNull
     private String clientId;
 
     @NotNull
     @Size(min = 2, max=40, message = "Session id length min = 2, max = 40")
     private String sessionId;
 
-    @NotNull
-    private String label;
+    private ItemBadge badge;
 
-    @NotNull
-    private String text;
+    private RawContentLog rawContentLog;
 
 }

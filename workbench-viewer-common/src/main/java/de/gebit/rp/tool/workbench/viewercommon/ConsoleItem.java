@@ -36,14 +36,15 @@ public class ConsoleItem {
     private LocalDateTime timestamp;
 
     @NotNull
-    @Size(min = 2, max=50, message = "Item type length min = 2, max = 50")
-    private String type;
+    private ItemType type;
 
     @NotNull
     @Size(min = 2, max=50, message = "Item name length min = 5, max = 50")
     private String name;
 
     private List<RawContent> raw;
+
+    private List<ItemBadge> badges;
 
     private String htmlText;
 

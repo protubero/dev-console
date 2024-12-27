@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -17,10 +16,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
-import de.protubero.devconsole.common.ConsoleItem;
+import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
 
 @Route("")
 @Uses(Icon.class)
@@ -28,18 +26,48 @@ public class RpWorkbenchItemView extends VerticalLayout {
 
     private LogItemDatabase itemDb;
     private Registration dbRegistration;
+    private VirtualList<ConsoleItem> list;
+    private boolean scrollToEnd = true;
+    private Span countSpan;
 
     public RpWorkbenchItemView(@Autowired LogItemDatabase itemDb) {
         this.itemDb = itemDb;
 
+        HorizontalLayout topPanel = new HorizontalLayout();
+        topPanel.add(new Span("RP Workbench Viewer"));
+
+        Button scrollLockBtn = new Button("Auto Scroll ON");
+        scrollLockBtn.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        scrollLockBtn.addClickListener(evt -> {
+           scrollToEnd = !scrollToEnd;
+           if (scrollToEnd) {
+               scrollLockBtn.setText("Auto Scroll ON");
+           } else {
+               scrollLockBtn.setText("Auto Scroll OFF");
+           }
+        });
+        topPanel.add(scrollLockBtn);
+
+        Button clearBtn = new Button("Clear");
+        clearBtn.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        clearBtn.addClickListener(evt -> {
+            itemDb.clear();
+            list.getDataProvider().refreshAll();
+        });
+        topPanel.add(clearBtn);
+
+        Span countSpan = new Span(String.valueOf(itemDb.getConsoleItemList().size()));
+        topPanel.add(countSpan);
+
+        add(topPanel);
+
         setSizeFull();
 
-        VirtualList<ConsoleItem> list = new VirtualList<>();
+        list = new VirtualList<>();
         list.setSizeFull();
-
         ListDataProvider<ConsoleItem> dataProvider = new ListDataProvider<>(itemDb.getConsoleItemList());
         list.setDataProvider(dataProvider);
-        list.setRenderer(personCardRenderer);
+        list.setRenderer(new ItemRenderer());
 
         add(list);
 
@@ -60,7 +88,11 @@ public class RpWorkbenchItemView extends VerticalLayout {
                 Optional<UI> ui = list.getUI();
                 if (ui.isPresent()) {
                     ui.get().access(() -> {
+                        countSpan.setText(String.valueOf(itemDb.getConsoleItemList().size()));
                         dataProvider.refreshAll();
+                        if (scrollToEnd) {
+                            list.scrollToEnd();
+                        }
                     });
                 }
             }
@@ -74,21 +106,5 @@ public class RpWorkbenchItemView extends VerticalLayout {
         }
         super.onDetach(detachEvent);
     }
-
-
-
-    private ComponentRenderer<Component, ConsoleItem> personCardRenderer = new ComponentRenderer<>(
-            item -> {
-                Button btn = new Button(item.getName() + item.getRaw().get(0).getValue(), new Icon(VaadinIcon.ARROW_LEFT));
-                btn.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_CONTRAST);
-
-                Span confirmed = new Span("Confirmed");
-                confirmed.getElement().getThemeList().add("badge success");
-
-                HorizontalLayout layout = new HorizontalLayout();
-                layout.add(btn, confirmed);
-
-                return layout;
-            });
 
 }

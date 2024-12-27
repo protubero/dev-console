@@ -1,6 +1,7 @@
 package de.gebit.rp.tool.workbench.viewer;
 
-import de.protubero.devconsole.common.ConsoleItem;
+
+import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
 
 public interface LogItemDatabaseListener {
 

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.LogItem;
+import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
+import de.gebit.rp.tool.workbench.viewercommon.LogItem;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 

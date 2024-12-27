@@ -2,3 +2,8 @@
 @import url('./views/master-detail-view.css');
 @import url('./views/chat-view.css');
 @import url('./views/gridwith-filters-view.css');
+
+
+span.itembadge {
+    cursor: default
+}

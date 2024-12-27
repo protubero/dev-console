@@ -17,10 +17,11 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
+import de.gebit.rp.tool.workbench.viewercommon.ItemBadge;
 import de.gebit.rp.tool.workbench.viewercommon.LogItem;
-import de.gebit.rp.tool.workbench.viewercommon.RawContent;
+import de.gebit.rp.tool.workbench.viewercommon.LogItemType;
+import de.gebit.rp.tool.workbench.viewercommon.RawContentLog;
 
 public final class WorkbenchViewerClient {
 
@@ -72,7 +73,7 @@ public final class WorkbenchViewerClient {
     public void close() {
         logger.info("Shutting down console thread");
 
-        //TODO use poison pill to stop the thread
+        // TODO use poison pill to stop the thread
         // in order to ensure that all messages are sent which are in the pipeline
         // at this point in time
         outboxThread.interrupt();
@@ -82,13 +83,26 @@ public final class WorkbenchViewerClient {
         return new WorkbenchViewerClient(aHost, aPort);
     }
 
-    public void append(ConsoleItem aConsoleItem, String label, String text) {
+    public void appendRawContent(ConsoleItem aConsoleItem, String label, String text) {
         LogItem logItem = LogItem.builder().clientId(aConsoleItem.getClientId())
                 .sessionId(aConsoleItem.getSessionId())
-                .label(Objects.requireNonNull(label))
-                .text(Objects.requireNonNull(text))
+                .type(LogItemType.raw)
+                .rawContentLog(RawContentLog.of(label, text))
                 .build();
 
+        append(logItem);
+    }
+
+    public void appendBadge(ConsoleItem aConsoleItem, ItemBadge badge) {
+        LogItem logItem = LogItem.builder().clientId(aConsoleItem.getClientId())
+                .sessionId(aConsoleItem.getSessionId())
+                .type(LogItemType.badge)
+                .badge(Objects.requireNonNull(badge))
+                .build();
+        append(logItem);
+    }
+
+    private void append(LogItem logItem) {
         try {
             String json = mapper.writeValueAsString(Objects.requireNonNull(logItem));
 
