@@ -1,4 +1,4 @@
-package de.protubero.devconsole.common;
+package de.gebit.rp.tool.workbench.viewercommon;
 
 import java.time.LocalDateTime;
 import java.util.List;

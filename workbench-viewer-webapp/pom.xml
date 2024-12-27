@@ -70,8 +70,8 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
-            <groupId>de.protubero.devconsole</groupId>
-            <artifactId>common</artifactId>
+            <groupId>de.gebit.rp.tool</groupId>
+            <artifactId>workbench-viewer-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

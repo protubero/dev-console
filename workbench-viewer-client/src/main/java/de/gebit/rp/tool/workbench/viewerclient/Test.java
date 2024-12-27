@@ -3,8 +3,9 @@ package de.gebit.rp.tool.workbench.viewerclient;
 import java.util.Date;
 import java.util.List;
 
-import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.RawContent;
+import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
+import de.gebit.rp.tool.workbench.viewercommon.RawContent;
+
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {

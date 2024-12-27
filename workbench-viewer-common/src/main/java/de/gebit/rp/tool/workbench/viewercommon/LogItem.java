@@ -1,4 +1,4 @@
-package de.protubero.devconsole.common;
+package de.gebit.rp.tool.workbench.viewercommon;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

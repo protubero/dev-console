@@ -18,8 +18,8 @@
             <version>2.0.16</version>
         </dependency>
         <dependency>
-            <groupId>de.protubero.devconsole</groupId>
-            <artifactId>common</artifactId>
+            <groupId>de.gebit.rp.tool</groupId>
+            <artifactId>workbench-viewer-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 

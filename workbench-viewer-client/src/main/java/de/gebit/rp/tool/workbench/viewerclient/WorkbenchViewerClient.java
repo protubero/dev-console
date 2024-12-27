@@ -17,8 +17,10 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.protubero.devconsole.common.ConsoleItem;
-import de.protubero.devconsole.common.LogItem;
+
+import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
+import de.gebit.rp.tool.workbench.viewercommon.LogItem;
+import de.gebit.rp.tool.workbench.viewercommon.RawContent;
 
 public final class WorkbenchViewerClient {
 
