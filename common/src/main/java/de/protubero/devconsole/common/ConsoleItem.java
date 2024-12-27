@@ -47,4 +47,13 @@ public class ConsoleItem {
 
     private String htmlText;
 
+    @Override
+    public int hashCode() {
+        return Long.hashCode(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return ((ConsoleItem) obj).id == id;
+    }
 }

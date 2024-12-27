@@ -1,16 +1,30 @@
 
-icons für vordefinierte events
-schick
-scrolling funktioniert richtig
+Layout Change
+- Item list -> Item Card List
+- Umschaltbar: Details View Overlay vs. Side by side & Splitter
+- icons für vordefinierte events
+- schicker
+- scrolling funktioniert richtig
 
-reserved tags -> Hervorhebung (dynamisch) warn / error / info icon
+badges
+- badges[] item field
+- AdditionalInfo[enum color, String text]
+- results in badges
 
-clear-client
-clear-server (delete up to ...)
+Button "clear-client"
+- delete all items in the Browser but not on the server
+- defines a page-break item id, which is send to the server
+- server sends back
+- also executable by API
+- Auto creation of item-ranges a.k.a "Pages"
 
-Page Numbers ...
+Button "clear-server"
+- delete all items at the server
+- send current highest item id to the server
+- server sends back request to all clients to reset at this item
+- also executable by API
 
--page clear-client control message
+Switch between pages
 
 -----
 tag/filter-scheme
