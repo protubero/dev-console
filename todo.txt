@@ -1,15 +1,24 @@
 
-Layout Change
-- Item list -> Item Card List
-- Umschaltbar: Details View Overlay vs. Side by side & Splitter
-- schicker
-- scrolling funktioniert richtig
-- client-side validation
 
-badges
-- badges[] item field
-- AdditionalInfo[enum color, String text]
-- results in badges
+Header
+    #num
+    time
+    icon
+    name
+    badges
+    page id/name
+
+- handle no raw content correctly
+- make log updates easier ui-wise
+- heights and alignments
+- header absetzen
+
+----------- later
+navigate back
+Filtering
+
+Page switcher
+- client-side validation
 
 Button "clear-client"
 - delete all items in the Browser but not on the server
@@ -24,11 +33,5 @@ Button "clear-server"
 - server sends back request to all clients to reset at this item
 - also executable by API
 
-Switch between pages
-
------
-tag/filter-scheme
-retain-limit message count or size
-Dark mode
-Session Summary Page (Send updatable HTML)
+Dark mode switch
 

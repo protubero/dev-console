@@ -1,5 +1,5 @@
 package de.gebit.rp.tool.workbench.viewercommon;
 
 public enum ItemType {
-    event, command, info
+    event, command, info, error
 }

@@ -41,7 +41,9 @@ public class Test {
                     .build();
             client.send(item);
             client.appendRawContent(logConsoleItem, "text", String.valueOf(new Date()) + System.lineSeparator());
-            client.appendBadge(logConsoleItem, ItemBadge.of(ItemBadgeType.error, "Exc", "hint"));
+            if (i == 1) {
+                client.appendBadge(logConsoleItem, ItemBadge.of(ItemBadgeType.error, "Exc", "hint"));
+            }
 
             Thread.sleep(300l);
 

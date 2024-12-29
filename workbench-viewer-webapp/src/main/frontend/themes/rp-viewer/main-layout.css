@@ -18,3 +18,28 @@ vaadin-side-nav-item vaadin-icon {
 [slot="drawer"]:is(header, footer):is(:empty) {
   display: none;
 }
+
+
+.itemlistentry {
+    white-space-collapse: preserve;
+    font-family: monospace;
+    vertical-align: middle;
+    line-height: 24px;
+    height: 24px;
+    cursor: default;
+}
+
+.itemlistentry span {
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 24px;
+    height: 24px;
+}
+
+.itemlistentryicon {
+    margin-top: 4px;
+}
+
+.itemlistentry:hover {
+  background-color: LightGray;
+}

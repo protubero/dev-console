@@ -109,11 +109,11 @@ public class LogItemDatabase {
                 }
             }
             case badge -> {
-                logger.info("add badge " + logItem.getBadge());
+                logger.debug("add badge " + logItem.getBadge());
                 if (currentItem.getBadges() == null) {
                     currentItem.setBadges(new ArrayList<>());
-                    currentItem.getBadges().add(logItem.getBadge());
                 }
+                currentItem.getBadges().add(logItem.getBadge());
             }
         }
 
