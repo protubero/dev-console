@@ -11,18 +11,21 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
-import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
-import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
@@ -47,30 +50,40 @@ public class RpWorkbenchItemView extends VerticalLayout {
         this.itemDb = itemDb;
 
         HorizontalLayout topPanel = new HorizontalLayout();
-        topPanel.add(new Span("RP Workbench Viewer"));
+        topPanel.setHeight("50px");
+        topPanel.setWidthFull();
+        topPanel.setClassName("toppanel");
+        topPanel.setAlignItems(Alignment.CENTER);
+        H4 appTitle = new H4("RP Workbench Viewer");
+        appTitle.setClassName("apptitle");
+        topPanel.add(appTitle);
 
-        Button scrollLockBtn = new Button("Auto Scroll ON");
-        scrollLockBtn.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        MenuBar menubar = new MenuBar();
+        MenuItem scrollLockBtn = menubar.addItem("Auto Scroll OFF");
+
         scrollLockBtn.addClickListener(evt -> {
-           scrollToEnd = !scrollToEnd;
-           if (scrollToEnd) {
-               scrollLockBtn.setText("Auto Scroll ON");
-           } else {
-               scrollLockBtn.setText("Auto Scroll OFF");
-           }
+            scrollToEnd = !scrollToEnd;
+            if (scrollToEnd) {
+                scrollLockBtn.setText("Auto Scroll ON");
+            } else {
+                scrollLockBtn.setText("Auto Scroll OFF");
+            }
         });
-        topPanel.add(scrollLockBtn);
 
-        Button clearBtn = new Button("Clear");
-        clearBtn.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        clearBtn.addClickListener(evt -> {
+        MenuItem clearBtn = menubar.addItem("Clear", evt -> {
             itemDb.clear();
+            clearContentPane();
             list.getDataProvider().refreshAll();
         });
-        topPanel.add(clearBtn);
 
-        Span countSpan = new Span(String.valueOf(itemDb.getConsoleItemList().size()));
-        topPanel.add(countSpan);
+        topPanel.add(menubar);
+
+        Span countSpan = new Span("Count: " + String.valueOf(itemDb.getConsoleItemList().size()));
+        countSpan.setClassName("headerInfoCount");
+
+        Div countDiv = new Div(countSpan);
+        countDiv.setClassName("headerInfo");
+        topPanel.add(countDiv);
 
         add(topPanel);
 
@@ -148,7 +161,8 @@ public class RpWorkbenchItemView extends VerticalLayout {
     }
 
     private void displayItemInContentPane(ConsoleItem consoleItem) {
-        contentPaneHeader.removeAll();
+        clearContentPane();
+
         contentPaneHeader.add(new Icon(ItemRenderer.itemTypeIcon(consoleItem.getType())));
         contentPaneHeader.add(new Span(consoleItem.getName()));
 
@@ -160,18 +174,24 @@ public class RpWorkbenchItemView extends VerticalLayout {
         }
 
         // HTML
-        contentPaneHtmlWrapper.removeAll();
         if (consoleItem.getHtmlText() != null) {
             contentPaneHtmlWrapper.add(new Html("<div>" + consoleItem.getHtmlText() + "</div>"));
         }
 
-        while (contentPaneRawTabs.getTabCount() > 0) {
-            contentPaneRawTabs.remove(0);
-        }
         if (consoleItem.getRaw() != null) {
             for (RawContent rawContent : consoleItem.getRaw()) {
-                contentPaneRawTabs.add(rawContent.getLabel(),  new Div(new Text(rawContent.getValue())));
+                Pre raw = new Pre(rawContent.getValue());
+                raw.setClassName("rawContent");
+                contentPaneRawTabs.add(rawContent.getLabel(), raw);
             }
+        }
+    }
+
+    private void clearContentPane() {
+        contentPaneHeader.removeAll();
+        contentPaneHtmlWrapper.removeAll();
+        while (contentPaneRawTabs.getTabCount() > 0) {
+            contentPaneRawTabs.remove(0);
         }
     }
 

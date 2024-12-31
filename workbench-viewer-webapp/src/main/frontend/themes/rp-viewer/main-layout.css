@@ -18,7 +18,30 @@ vaadin-side-nav-item vaadin-icon {
 [slot="drawer"]:is(header, footer):is(:empty) {
   display: none;
 }
+.headerInfoCount {
+    float: right
+}
 
+.headerInfo {
+    flex-grow: 2;
+}
+
+.rawContent {
+    padding:10px;
+    font-family: monospace;
+}
+
+.toppanel {
+    background: var(--lumo-contrast-10pct);
+    padding-left:10px;
+    padding-right:10px;
+    border-radius: 6px;
+}
+
+.apptitle {
+    margin-right: 50px;
+    color: var(--lumo-primary-color-50pct);
+}
 
 .itemlistentry {
     white-space-collapse: preserve;
@@ -27,6 +50,7 @@ vaadin-side-nav-item vaadin-icon {
     line-height: 24px;
     height: 24px;
     cursor: default;
+    overflow: hidden;
 }
 
 .itemlistentry span {

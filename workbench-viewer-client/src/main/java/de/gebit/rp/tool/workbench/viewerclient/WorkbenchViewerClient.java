@@ -61,7 +61,7 @@ public final class WorkbenchViewerClient {
                         logger.error(response.body());
                     }
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    logger.info("Outbox thread interrupted");
                 } catch (IOException e) {
                     logger.error("Error sending to dev console {}", e);
                 }
@@ -102,7 +102,7 @@ public final class WorkbenchViewerClient {
         append(logItem);
     }
 
-    private void append(LogItem logItem) {
+    public void append(LogItem logItem) {
         try {
             String json = mapper.writeValueAsString(Objects.requireNonNull(logItem));
 

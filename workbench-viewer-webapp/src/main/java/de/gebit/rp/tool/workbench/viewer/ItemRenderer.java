@@ -29,21 +29,11 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
                 aClickListener.accept(item);
             });
 
-            /*
-            Button btn = new Button(item.getName(), new Icon(itemTypeIcon(item.getType())));
-            btn.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_CONTRAST);
-            btn.addClassName("itemlistentrybtn");
-            btn.addClickListener(evt -> {
-                aClickListener.accept(item);
-            });
-             */
             String idAndTime = String.format("%-4s %s ", item.getId(), TIME_FORMATTER.format(item.getTimestamp()));
             Icon icon = new Icon(itemTypeIcon(item.getType()));
             icon.setSize("16px");
             icon.addClassName("itemlistentryicon");
             layout.add(new Span(new Text(idAndTime)), icon, new Span(new Text(item.getName())));
-
-
 
             if (item.getBadges() != null) {
                 for (var badge : item.getBadges()) {
@@ -84,6 +74,9 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
             }
             case error -> {
                 return VaadinIcon.BOMB;
+            }
+            case receipt -> {
+                return VaadinIcon.NEWSPAPER;
             }
             default -> {
                 throw new AssertionError();
