@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
@@ -18,14 +15,15 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import de.gebit.rp.tool.workbench.viewercommon.ConsoleItem;
@@ -46,8 +44,12 @@ public class RpWorkbenchItemView extends VerticalLayout {
     private TabSheet contentPaneRawTabs;
     private ConsoleItem selectedItem;
 
+    private boolean showIdAndTime = true;
+
     public RpWorkbenchItemView(@Autowired LogItemDatabase itemDb) {
         this.itemDb = itemDb;
+
+        list = new VirtualList<>();
 
         HorizontalLayout topPanel = new HorizontalLayout();
         topPanel.setHeight("50px");
@@ -78,6 +80,31 @@ public class RpWorkbenchItemView extends VerticalLayout {
 
         topPanel.add(menubar);
 
+
+        MenuBar itemListDisplayMenuBar = new MenuBar();
+        itemListDisplayMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+
+        MenuItem clockMenuItem = itemListDisplayMenuBar.addItem(new Icon(VaadinIcon.CLOCK));
+        clockMenuItem.addClassNames("toggle-icon", "selected-icon");
+        clockMenuItem.addClickListener(evt -> {
+            if (showIdAndTime) {
+                clockMenuItem.removeClassName("selected-icon");
+                clockMenuItem.addClassName("deselected-icon");
+                list.addClassName("hideIdAndTime");
+            } else {
+                clockMenuItem.removeClassName("deselected-icon");
+                clockMenuItem.addClassName("selected-icon");
+                list.removeClassName("hideIdAndTime");
+            }
+            showIdAndTime = !showIdAndTime;
+        });
+
+        MenuItem durationMenuItem = itemListDisplayMenuBar.addItem(new Icon(VaadinIcon.STOPWATCH));
+        durationMenuItem.addClassNames("toggle-icon", "selected-icon");
+
+        topPanel.add(itemListDisplayMenuBar);
+
+
         Span countSpan = new Span("Count: " + String.valueOf(itemDb.getConsoleItemList().size()));
         countSpan.setClassName("headerInfoCount");
 
@@ -90,7 +117,7 @@ public class RpWorkbenchItemView extends VerticalLayout {
 
         setSizeFull();
 
-        list = new VirtualList<>();
+
 
         list.setHeightFull();
         list.setWidth("500px");

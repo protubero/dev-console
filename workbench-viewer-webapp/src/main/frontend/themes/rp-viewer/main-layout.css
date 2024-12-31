@@ -44,13 +44,14 @@ vaadin-side-nav-item vaadin-icon {
 }
 
 .itemlistentry {
-    white-space-collapse: preserve;
+    white-space: preserve nowrap;
     font-family: monospace;
     vertical-align: middle;
     line-height: 24px;
     height: 24px;
     cursor: default;
     overflow: hidden;
+    column-gap: 0px;
 }
 
 .itemlistentry span {
@@ -60,10 +61,36 @@ vaadin-side-nav-item vaadin-icon {
     height: 24px;
 }
 
+.itemlistentryiconspan {
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 24px;
+    height: 24px;
+    text-align: center;
+}
+
 .itemlistentryicon {
-    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 .itemlistentry:hover {
   background-color: LightGray;
+}
+
+.selected-icon {
+  background-color: #999999;
+  color: #eeeeee;
+}
+
+.deselected-icon {
+   color: #444444;
+}
+
+.toggle-icon {
+  min-width: 32px;
+  width: 32px;
+}
+
+.hideIdAndTime .idAndTimeSpan {
+    display: none;
 }

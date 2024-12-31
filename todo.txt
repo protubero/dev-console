@@ -1,48 +1,45 @@
+# API
 
-Item list felder ein/ausblenden
+1) ConsoleItem/Log Item ergänzen
+  Duration
+  ContextShort (nur ConsoleItem, Service oder Topic)
+  ContextLong (nur ConsoleItem)
+
+2) startSession
+  Name
+  UUID
+
+Item List ergänzen
+    Duration
+    Item list felder ein/ausblenden
+        - id & time
+        - Duration
+        - Context
+    ContextShort
 
 Header
     #num
     time
     icon
     name
+    ContextLong
     badges
+    Duration
     page id/name
 
+- context filter (multi-select)
+
 - handle no raw content correctly
-- make log updates easier ui-wise
-- heights and alignments
-- header absetzen
 
-Verhalten item liste beim Zusammenschieben
+Session switch instead of clear buttom
+check HTML Display workd correctly
 
-Status line
-
-in-progress Flag (donut), timeout
-end In progress
-
-Target Service (Short / long)
-
-start script cmd -> switcher
 ----------- later
 navigate back
-Filtering
+Filtering (Events)
 
-Page switcher
 - client-side validation
 
-Button "clear-client"
-- delete all items in the Browser but not on the server
-- defines a page-break item id, which is send to the server
-- server sends back
-- also executable by API
-- Auto creation of item-ranges a.k.a "Pages"
-
-Button "clear-server"
-- delete all items at the server
-- send current highest item id to the server
-- server sends back request to all clients to reset at this item
-- also executable by API
-
 Dark mode switch
-
+Dump to Text / Load from text
+Status line

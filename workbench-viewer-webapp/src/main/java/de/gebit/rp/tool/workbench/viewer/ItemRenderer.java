@@ -25,6 +25,7 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
         super(item -> {
             HorizontalLayout layout = new HorizontalLayout();
             layout.addClassName("itemlistentry");
+            layout.setPadding(false);
             layout.addClickListener(evt -> {
                 aClickListener.accept(item);
             });
@@ -32,8 +33,13 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
             String idAndTime = String.format("%-4s %s ", item.getId(), TIME_FORMATTER.format(item.getTimestamp()));
             Icon icon = new Icon(itemTypeIcon(item.getType()));
             icon.setSize("16px");
-            icon.addClassName("itemlistentryicon");
-            layout.add(new Span(new Text(idAndTime)), icon, new Span(new Text(item.getName())));
+            icon.setClassName("itemlistentryicon");
+            Span idAndTimeSpan = new Span(new Text(idAndTime));
+            idAndTimeSpan.setClassName("idAndTimeSpan");
+            Span iconSpan = new Span(icon);
+            iconSpan.addClassName("itemlistentryiconspan");
+            iconSpan.setMinWidth("20px");
+            layout.add(idAndTimeSpan, iconSpan, new Span(new Text(item.getName())));
 
             if (item.getBadges() != null) {
                 for (var badge : item.getBadges()) {
