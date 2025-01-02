@@ -41,6 +41,7 @@ vaadin-side-nav-item vaadin-icon {
 .apptitle {
     margin-right: 50px;
     color: var(--lumo-primary-color-50pct);
+    white-space: preserve nowrap;
 }
 
 .itemlistentry {
