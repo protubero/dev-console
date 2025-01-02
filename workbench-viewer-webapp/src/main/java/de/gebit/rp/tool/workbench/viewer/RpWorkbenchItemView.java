@@ -1,8 +1,5 @@
 package de.gebit.rp.tool.workbench.viewer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -12,7 +9,6 @@ import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -67,6 +63,9 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
         ListDataProvider<ConsoleItem> listDataProvider = new ListDataProvider<>(itemDb.getConsoleItemList());
         dataProvider = listDataProvider.withConfigurableFilter();
         dataProvider.setFilter(ci -> {
+            if (selectedSession == null) {
+                return false;
+            }
             return selectedSession == allSession || ci.getSessionId().equals(selectedSession.getId());
         });
 
@@ -103,9 +102,6 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
         menubar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
 
         scrollLockFlag = new FlagMenuItem(VaadinIcon.LOCK, false)
-                .register(() -> {
-
-                })
                 .appendTo(menubar);
 
         idAndTimeVisibleFlag = new FlagMenuItem(VaadinIcon.CLOCK, false)
@@ -122,19 +118,14 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
 
 
         // SESSION SWITCH
-        List<ConsoleSession> sessionList = new ArrayList<>(itemDb.getConsoleSessionList());
-        Collections.sort(sessionList, (c1, c2) -> {
-            return c1.getName().compareTo(c2.getName());
-        });
-        sessionList.add(0, allSession);
-
         sessionSelect = new Select<>();
-        sessionSelect.setItems(sessionList);
+        sessionSelect.setItems(new SessionListProxy(allSession, itemDb.getConsoleSessionList()));
 
         sessionSelect.setItemLabelGenerator(session -> {
             return session.getName();
         });
         sessionSelect.setValue(allSession);
+        sessionSelect.setEmptySelectionAllowed(false);
         sessionSelect.addValueChangeListener(this::onSessionSelected);
 
         topPanel.add(sessionSelect);
@@ -167,8 +158,10 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
 
 
     private void onSessionSelected(AbstractField.ComponentValueChangeEvent<Select<ConsoleSession>, ConsoleSession> evt) {
-        selectedSession = evt.getValue();
-        refreshView();
+        if (evt.getValue() != null) {
+            selectedSession = evt.getValue();
+            refreshView();
+        }
     }
 
     private void refreshView() {
@@ -223,15 +216,25 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
         Optional<UI> ui = virtualItemList.getUI();
         if (ui.isPresent()) {
             ui.get().access(() -> {
-                if (selectedSession.getId().equals(item.getSessionId())) {
+                ConsoleSession session = itemDb.sessionById(item.getSessionId()).get();
+                ConsoleSession tCurrentlySelectedSession = Objects.requireNonNull(selectedSession);
+
+                if (scrollLockFlag.isEnabled()) {
+                    sessionSelect.setValue(tCurrentlySelectedSession);
+                } else {
+                    if (item.getSessionId().equals(tCurrentlySelectedSession.getId())) {
+                        sessionSelect.setValue(tCurrentlySelectedSession);
+                    } else {
+                        sessionSelect.setValue(session);
+                    }
+                }
+
+                Objects.requireNonNull(selectedSession);
+
+                if (selectedSession == allSession || selectedSession.getId().equals(item.getSessionId())) {
                     dataProvider.refreshAll();
                     updateCount();
                     if (scrollLockFlag.isEnabled()) {
-                        if (!item.getSessionId().equals(this.selectedSession.getId())) {
-                            // switch to new session
-                            sessionSelect.setValue(itemDb.sessionById(item.getSessionId()).get());
-                        }
-
                         virtualItemList.scrollToEnd();
                     }
                 }
