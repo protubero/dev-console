@@ -1,13 +1,3 @@
-# API
-
-1) ConsoleItem/Log Item ergänzen
-  Duration
-  ContextShort (nur ConsoleItem, Service oder Topic)
-  ContextLong (nur ConsoleItem)
-
-2) startSession
-  Name
-  UUID
 
 Item List ergänzen
     Duration
@@ -27,19 +17,17 @@ Header
     Duration
     page id/name
 
+- newest Session link
+- autoSwitchSession
+
 - context filter (multi-select)
 
 - handle no raw content correctly
 
-Session switch instead of clear buttom
-check HTML Display workd correctly
-
 ----------- later
 navigate back
 Filtering (Events)
-
 - client-side validation
-
 Dark mode switch
 Dump to Text / Load from text
 Status line

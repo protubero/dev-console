@@ -15,6 +15,34 @@ public class Test {
     public static void main(String[] args) throws InterruptedException {
         var client = WorkbenchViewerClient.of("localhost", 8080);
 
+        String ersteSessionId = client.startSession("Erste Session");
+        var logConsoleItem = ConsoleItem.builder()
+                .name("Event")
+                .type(ItemType.event)
+                .contextLong("topic-purchase-transaction")
+                .contextShort("PTx")
+                .sessionId(ersteSessionId)
+                .build();
+        client.send(logConsoleItem);
+
+        String zweiteSessionId = client.startSession("Zweite Session");
+        var item = ConsoleItem.builder()
+                .name("CreatePurchaseTransaction")
+                .type(ItemType.command)
+                .contextLong("Purchase Service")
+                .contextShort("PS")
+                .duration(200)
+                .htmlText("a <b>simple</b> text")
+                .raw(List.of(RawContent.of("my key", "my value"),
+                        RawContent.of("my key2", "my value2")))
+                .sessionId(zweiteSessionId)
+                .build();
+        client.send(item);
+
+
+        client.close();
+
+    /*
         var logConsoleItem = ConsoleItem.builder()
                 .name("Log")
                 .type(ItemType.info)
@@ -22,12 +50,6 @@ public class Test {
                 .build();
         client.send(logConsoleItem);
 
-        logConsoleItem = ConsoleItem.builder()
-                .name("Eventg")
-                .type(ItemType.event)
-                .sessionId("xyz")
-                .build();
-        client.send(logConsoleItem);
 
         System.out.println("start");
         for (int i = 0; i < 100; i++) {
@@ -55,5 +77,11 @@ public class Test {
         }
         System.out.println("stop");
         Thread.sleep(5000l);
+
+     */
     }
+
+
+
+
 }

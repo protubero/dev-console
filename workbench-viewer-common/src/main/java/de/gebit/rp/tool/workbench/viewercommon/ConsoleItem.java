@@ -48,6 +48,12 @@ public class ConsoleItem {
 
     private String htmlText;
 
+    private Integer duration;
+
+    private String contextShort;
+
+    private String contextLong;
+
     @Override
     public int hashCode() {
         return Long.hashCode(id);
