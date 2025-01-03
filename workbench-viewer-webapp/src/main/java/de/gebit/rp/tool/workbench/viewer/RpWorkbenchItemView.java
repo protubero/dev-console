@@ -50,7 +50,8 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
     /// //
     /// STATE
     /// //
-    private FlagMenuItem idAndTimeVisibleFlag;
+    private FlagMenuItem idVisibleFlag;
+    private FlagMenuItem timestampVisibleFlag;
     private FlagMenuItem durationVisibleFlag;
     private FlagMenuItem contextVisibleFlag;
     private FlagMenuItem scrollLockFlag;
@@ -104,14 +105,17 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
         scrollLockFlag = new FlagMenuItem(VaadinIcon.LOCK, false)
                 .appendTo(menubar);
 
-        idAndTimeVisibleFlag = new FlagMenuItem(VaadinIcon.CLOCK, false)
-                .register(virtualItemList, "hideIdAndTime")
+        idVisibleFlag = new FlagMenuItem(VaadinIcon.AIRPLANE, false)
+                .register(virtualItemList, "list-id-hide")
+                .appendTo(menubar);
+        timestampVisibleFlag = new FlagMenuItem(VaadinIcon.CLOCK, false)
+                .register(virtualItemList, "list-timestamp-hide")
                 .appendTo(menubar);
         durationVisibleFlag = new FlagMenuItem(VaadinIcon.STOPWATCH, true)
-                .register(virtualItemList, "hideDuration")
+                .register(virtualItemList, "list-duration-hide")
                 .appendTo(menubar);
         contextVisibleFlag = new FlagMenuItem(VaadinIcon.STAR, true)
-                .register(virtualItemList, "hideContext")
+                .register(virtualItemList, "list-context-hide")
                 .appendTo(menubar);
 
         topPanel.add(menubar);
@@ -131,13 +135,11 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
         topPanel.add(sessionSelect);
 
         // COUNT DISPLAY
-        countSpan = new Span("Count: " + String.valueOf(itemDb.getConsoleItemList().size()));
+        countSpan = new Span("Count: " + itemDb.getConsoleItemList().size());
         countSpan.setClassName("headerInfoCount");
         Div countDiv = new Div(countSpan);
         countDiv.setClassName("headerInfo");
         topPanel.add(countDiv);
-
-
 
         /// //
         /// CONTENT PANE

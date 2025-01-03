@@ -24,23 +24,41 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
     public ItemRenderer(Consumer<ConsoleItem> aClickListener) {
         super(item -> {
             HorizontalLayout layout = new HorizontalLayout();
-            layout.addClassName("itemlistentry");
+            layout.addClassName("list-item");
             layout.setPadding(false);
             layout.addClickListener(evt -> {
                 aClickListener.accept(item);
             });
 
-            String idAndTime = String.format("%-4s %s ", item.getId(), TIME_FORMATTER.format(item.getTimestamp()));
-            Icon icon = new Icon(itemTypeIcon(item.getType()));
-            icon.setSize("16px");
-            icon.setClassName("itemlistentryicon");
-            Span idAndTimeSpan = new Span(new Text(idAndTime));
-            idAndTimeSpan.setClassName("idAndTimeSpan");
-            Span iconSpan = new Span(icon);
-            iconSpan.addClassName("itemlistentryiconspan");
-            iconSpan.setMinWidth("20px");
-            layout.add(idAndTimeSpan, iconSpan, new Span(new Text(item.getName())));
+            // id
+            Span idSpan = new Span(new Text(String.valueOf(item.getId())));
+            idSpan.setClassName("list-id");
 
+            // timestamp
+            Span timestampSpan = new Span(new Text(TIME_FORMATTER.format(item.getTimestamp())));
+            timestampSpan.setClassName("list-timestamp");
+
+            // duration
+            Span durationSpan = new Span(new Text(item.getDuration() == null ? "-" : item.getDuration().toString()));
+            durationSpan.setClassName("list-duration");
+
+            // context
+            String context = String.format(item.getContextShort() == null ? "" : item.getContextShort());
+            Span contextSpan = new Span(new Text(context));
+            contextSpan.setClassName("list-context");
+
+            // icon
+            Icon icon = new Icon(itemTypeIcon(item.getType()));
+            icon.setClassName("list-typeicon");
+            Span iconSpan = new Span(icon);
+            iconSpan.addClassName("list-typeicon-span");
+
+            // name
+            Span nameSpan = new Span(new Text(item.getName()));
+
+            layout.add(idSpan, timestampSpan, durationSpan, iconSpan, contextSpan, nameSpan);
+
+            // badges
             if (item.getBadges() != null) {
                 for (var badge : item.getBadges()) {
                     layout.add(createBadgeOf(badge));
@@ -59,7 +77,7 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
             case error -> theme = theme + " error";
         }
         badgeSpan.getElement().getThemeList().add(theme);
-        badgeSpan.addClassName("itembadge");
+        badgeSpan.addClassName("list-badge-span");
         if (badge.getText() != null) {
             badgeSpan.setTitle(badge.getText());
         }

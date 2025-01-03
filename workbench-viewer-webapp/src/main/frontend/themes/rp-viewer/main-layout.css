@@ -44,7 +44,11 @@ vaadin-side-nav-item vaadin-icon {
     white-space: preserve nowrap;
 }
 
-.itemlistentry {
+/*
+CSS Styles to control the display of item list entries
+*/
+
+.list-item {
     white-space: preserve nowrap;
     font-family: monospace;
     vertical-align: middle;
@@ -55,28 +59,69 @@ vaadin-side-nav-item vaadin-icon {
     column-gap: 0px;
 }
 
-.itemlistentry span {
+.list-item span {
     vertical-align: middle;
     display: inline-block;
     line-height: 24px;
     height: 24px;
+    padding-right: 10px;
 }
 
-.itemlistentryiconspan {
+.list-item:hover {
+  background-color: LightGray;
+}
+
+.list-typeicon-span {
     vertical-align: middle;
     display: inline-block;
     line-height: 24px;
     height: 24px;
     text-align: center;
+    min-width: 20px
 }
 
-.itemlistentryicon {
+.list-context {
+    min-width: 50px;
+    text-align: right
+}
+
+
+.list-duration {
+    min-width: 50px;
+    text-align: right
+}
+
+.list-context {
+    font-weight: bold;
+    color: rgba(26, 57, 96, 0.5);
+}
+
+.list-typeicon {
     margin-bottom: 4px;
+    width: 16px;
+    height: 16px;
 }
 
-.itemlistentry:hover {
-  background-color: LightGray;
+.list-id-hide .list-id {
+    display: none;
 }
+
+.list-timestamp-hide .list-timestamp {
+    display: none;
+}
+
+.list-duration-hide .list-duration {
+    display: none;
+}
+
+.list-context-hide .list-context {
+    display: none;
+}
+
+/*
+CSS Styles of toogle buttons in the menu bar
+*/
+
 
 .selected-icon {
   background-color: #999999;
@@ -92,6 +137,3 @@ vaadin-side-nav-item vaadin-icon {
   width: 32px;
 }
 
-.hideIdAndTime .idAndTimeSpan {
-    display: none;
-}

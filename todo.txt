@@ -15,16 +15,13 @@ Header
     ContextLong
     badges
     Duration
-    page id/name
+    session id/name
 
 - newest Session link
-- autoSwitchSession
 
-- context filter (multi-select)
-
-- handle no raw content correctly
 
 ----------- later
+context filter (multi-select)
 navigate back
 Filtering (Events)
 - client-side validation

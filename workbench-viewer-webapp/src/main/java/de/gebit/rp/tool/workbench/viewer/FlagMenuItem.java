@@ -27,6 +27,10 @@ public class FlagMenuItem {
         this.container = Objects.requireNonNull(container);
         this.hidingCssClass = Objects.requireNonNull(hidingCssClass);
 
+        if (!enabled) {
+            container.addClassName(hidingCssClass);
+        }
+
         return this;
     }
 
@@ -43,13 +47,13 @@ public class FlagMenuItem {
                 menuItem.removeClassName("selected-icon");
                 menuItem.addClassName("deselected-icon");
                 if (hidingCssClass != null) {
-                    container.addClassName("hideIdAndTime");
+                    container.addClassName(hidingCssClass);
                 }
             } else {
                 menuItem.removeClassName("deselected-icon");
                 menuItem.addClassName("selected-icon");
                 if (hidingCssClass != null) {
-                    container.removeClassName("hideIdAndTime");
+                    container.removeClassName(hidingCssClass);
                 }
             }
             enabled = !enabled;
