@@ -3,12 +3,15 @@ package de.gebit.rp.tool.workbench.viewer;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -56,8 +59,11 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
     private FlagMenuItem contextVisibleFlag;
     private FlagMenuItem scrollLockFlag;
 
+    private Button switchToLatestSessionBtn;
+
     private ConsoleSession selectedSession = allSession;
     private ConsoleItem selectedItem;
+    private ConsoleSession newestSession;
 
     public RpWorkbenchItemView(@Autowired LogItemDatabase itemDb) {
         this.itemDb = itemDb;
@@ -133,6 +139,15 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
         sessionSelect.addValueChangeListener(this::onSessionSelected);
 
         topPanel.add(sessionSelect);
+
+        switchToLatestSessionBtn = new Button(new Icon(VaadinIcon.INBOX));
+        switchToLatestSessionBtn.setEnabled(false);
+        switchToLatestSessionBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        switchToLatestSessionBtn.addClickListener(evt -> {
+            sessionSelect.setValue(newestSession);
+        });
+        topPanel.add(switchToLatestSessionBtn);
+
 
         // COUNT DISPLAY
         countSpan = new Span("Count: " + itemDb.getConsoleItemList().size());
@@ -222,6 +237,7 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
                 ConsoleSession tCurrentlySelectedSession = Objects.requireNonNull(selectedSession);
 
                 if (scrollLockFlag.isEnabled()) {
+                    // selection value might be lost (i.e. null) due to refreshment of the data provider!
                     sessionSelect.setValue(tCurrentlySelectedSession);
                 } else {
                     if (item.getSessionId().equals(tCurrentlySelectedSession.getId())) {
@@ -246,11 +262,14 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
 
     @Override
     public void onNewSessionAdded(ConsoleSession aConsoleSession) {
+        this.newestSession = aConsoleSession;
         Optional<UI> ui = sessionSelect.getUI();
         if (ui.isPresent()) {
             ui.get().access(() -> {
                 sessionSelect.getDataProvider().refreshAll();
                 sessionSelect.setValue(selectedSession);
+
+                switchToLatestSessionBtn.setEnabled(true);
             });
         }
     }

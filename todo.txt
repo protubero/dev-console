@@ -1,17 +1,8 @@
 
-Item List ergänzen
-    Duration
-    Item list felder ein/ausblenden
-        - id & time
-        - Duration
-        - Context
-    ContextShort
 
 Header
     #num
     time
-    icon
-    name
     ContextLong
     badges
     Duration

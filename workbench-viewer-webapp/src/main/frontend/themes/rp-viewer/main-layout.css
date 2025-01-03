@@ -102,6 +102,11 @@ CSS Styles to control the display of item list entries
     height: 16px;
 }
 
+.list-badge-span {
+    margin-right: 5px
+}
+
+
 .list-id-hide .list-id {
     display: none;
 }

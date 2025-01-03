@@ -22,6 +22,7 @@ public class Test {
                 .contextLong("topic-purchase-transaction")
                 .contextShort("PTx")
                 .sessionId(ersteSessionId)
+                .badges(List.of(ItemBadge.of(ItemBadgeType.error, "err", "error"), ItemBadge.of(ItemBadgeType.info, "info", "...")))
                 .build();
         client.send(logConsoleItem);
 
