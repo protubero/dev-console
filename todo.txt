@@ -4,11 +4,8 @@ Header
     #num
     time
     ContextLong
-    badges
     Duration
     session id/name
-
-- newest Session link
 
 
 ----------- later

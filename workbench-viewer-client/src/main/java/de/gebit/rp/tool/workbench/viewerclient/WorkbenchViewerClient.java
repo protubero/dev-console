@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ public final class WorkbenchViewerClient {
 
     private String host;
     private int port;
+    private boolean closed;
 
     private BlockingQueue<HttpRequest> outbox = new LinkedBlockingQueue<>();
 
@@ -41,6 +43,8 @@ public final class WorkbenchViewerClient {
 
     private Thread outboxThread;
 
+
+    private CountDownLatch stoppedLatch = new CountDownLatch(1);
 
     private WorkbenchViewerClient(String aHost, int aPort) {
         this.host = Objects.requireNonNull(aHost);
@@ -54,41 +58,46 @@ public final class WorkbenchViewerClient {
         httpClient = HttpClient.newBuilder().build();
 
         outboxThread = new Thread(() -> {
-            boolean shutdownRequested = false;
-            while (!shutdownRequested) {
+            while (true) {
                 try {
                     HttpRequest request = outbox.take();
 
                     if (request.uri() == null) {
-                        shutdownRequested = true;
+                        logger.info("Shutdown requested");
+                        stoppedLatch.countDown();
+                        return;
                     } else {
-
-                        HttpResponse<String> response = httpClient
-                                .send(request, HttpResponse.BodyHandlers.ofString());
-                        if (response.statusCode() != 200) {
-                            logger.error("Error sending to dev console, status code={}", response.statusCode());
-                            logger.error(response.body());
-                        }
+                        sendToService(request);
                     }
                 } catch (InterruptedException e) {
                     logger.info("Outbox thread interrupted");
-                } catch (IOException e) {
-                    logger.error("Error sending to dev console {}", e);
+                } catch (Error e) {
+                    logger.info("Outbox thread error", e);
                 }
             }
-            logger.info("Outbox thread stopped");
         });
         outboxThread.start();
+    }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down workbench viewer client");
-            close();
-        }));
+    private void sendToService(HttpRequest request) {
+        HttpResponse<String> response = null;
+        try {
+            response = httpClient
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            logger.error("Error sending request to console service", e);
+        } catch (InterruptedException e) {
+            logger.error("Error sending request to console service", e);
+        }
+        if (response.statusCode() != 200) {
+            logger.error("Error sending to dev console, status code={}", response.statusCode());
+            logger.error(response.body());
+        }
     }
 
     public void close() {
         logger.info("Shutting down console thread");
-
+        closed = true;
         // send poison pill
         outbox.offer(new HttpRequest() {
             @Override
@@ -126,6 +135,11 @@ public final class WorkbenchViewerClient {
                 return null;
             }
         });
+        try {
+            stoppedLatch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static WorkbenchViewerClient of(String aHost, int aPort) {
@@ -159,7 +173,7 @@ public final class WorkbenchViewerClient {
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            outbox.offer(request);
+            process(request);
 
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
@@ -182,12 +196,20 @@ public final class WorkbenchViewerClient {
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            outbox.offer(request);
+            process(request);
 
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void process(HttpRequest request) {
+        if (closed) {
+            sendToService(request);
+        } else {
+            outbox.offer(request);
         }
     }
 
@@ -204,7 +226,7 @@ public final class WorkbenchViewerClient {
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            outbox.offer(request);
+            process(request);
 
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
@@ -223,7 +245,7 @@ public final class WorkbenchViewerClient {
                     .GET()
                     .build();
 
-            outbox.offer(request);
+            process(request);
 
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
