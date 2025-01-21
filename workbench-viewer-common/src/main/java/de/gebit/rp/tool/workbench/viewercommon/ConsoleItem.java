@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.ToString;
 
 @Setter
@@ -42,8 +43,10 @@ public class ConsoleItem {
     @Size(min = 2, max=50, message = "Item name length min = 5, max = 50")
     private String name;
 
+    @Singular("oneRaw")
     private List<RawContent> raw;
 
+    @Singular("oneBadge")
     private List<ItemBadge> badges;
 
     private String htmlText;

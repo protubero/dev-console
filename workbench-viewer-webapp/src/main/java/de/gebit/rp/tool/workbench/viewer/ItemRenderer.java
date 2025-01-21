@@ -102,6 +102,9 @@ public class ItemRenderer extends ComponentRenderer<Component, ConsoleItem> {
             case receipt -> {
                 return VaadinIcon.NEWSPAPER;
             }
+            case diff -> {
+                return VaadinIcon.ARROWS_LONG_H;
+            }
             default -> {
                 throw new AssertionError();
             }
