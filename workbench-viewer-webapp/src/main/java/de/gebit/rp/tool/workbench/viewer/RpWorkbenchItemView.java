@@ -3,7 +3,6 @@ package de.gebit.rp.tool.workbench.viewer;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.AbstractField;
@@ -39,7 +38,8 @@ import jakarta.annotation.PostConstruct;
 @Uses(Icon.class)
 public class RpWorkbenchItemView extends VerticalLayout implements LogItemDatabaseListener {
 
-    private ConsoleSession allSession = ConsoleSession.builder().id("_all").name("All").build();;
+    private ConsoleSession allSession = ConsoleSession.builder().id("_all").name("All").build();
+    ;
 
     private LogItemDatabase itemDb;
     private Registration dbRegistration;
@@ -173,7 +173,6 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
     }
 
 
-
     private void onSessionSelected(AbstractField.ComponentValueChangeEvent<Select<ConsoleSession>, ConsoleSession> evt) {
         if (evt.getValue() != null) {
             selectedSession = evt.getValue();
@@ -275,7 +274,9 @@ public class RpWorkbenchItemView extends VerticalLayout implements LogItemDataba
     }
 
     private void updateCount() {
-        countSpan.setText("Count: " + dataProvider.size(new Query<ConsoleItem, Void>()));
+        UI.getCurrent().access(() -> {
+            countSpan.setText("Count: " + dataProvider.size(new Query<ConsoleItem, Void>()));
+        });
     }
 
 }
